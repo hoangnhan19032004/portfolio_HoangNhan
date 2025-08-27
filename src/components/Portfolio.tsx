@@ -66,7 +66,7 @@ const PROJECTS = [
   {
     title: "Galaxy Playground – Three.js",
     description:
-      "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động.",
+      "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
     tech: ["Three.js", "Vite", "TypeScript"],
     image:
       "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
