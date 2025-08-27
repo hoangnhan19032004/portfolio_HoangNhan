@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, Phone, ArrowRight, Code2, Cpu, Rocket, Globe, Sun, Moon, MapPin, FileText } from "lucide-react";
+import { Github, Linkedin, Facebook, Mail, Phone, ArrowRight, Code2, Cpu, Rocket, Globe, Sun, Moon, MapPin, FileText } from "lucide-react";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const PROFILE = {
   socials: {
     github: "https://github.com/hoangnhan19032004",
     linkedin: "https://www.linkedin.com/in/nh%C3%A2n-ho%C3%A0ng-348a89380/",
+    facebook: "https://www.facebook.com/hoangnhan.9304",   // 👈 thêm dòng này
     website: "https://yourdomain.dev",
     cv: "#",
   },
@@ -28,7 +29,7 @@ const SKILLS = [
   { subject: "React", A: 92 },
   { subject: "Node.js", A: 88 },
   { subject: ".NET", A: 80 },
-  { subject: "SQL", A: 85 },
+  { subject: "SQL", A: 75 },
   { subject: "DevOps", A: 70 },
   { subject: "Security", A: 65 },
 ];
@@ -51,7 +52,7 @@ const PROJECTS = [
       "Website bán cà phê & trà với giỏ hàng, thanh toán, phân quyền Admin/Staff, tối ưu SEO & Core Web Vitals.",
     tech: ["ASP.NET Core", "React", "SQL Server", "JWT", "VNPAY"],
     image:
-      "https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=1600&auto=format&fit=crop",
+      "https://i.postimg.cc/J0j2kWt3/477708579-9146410812062255-5667828213886147487-n.jpg",
     links: { demo: "#", source: "#" },
   },
   {
@@ -60,7 +61,7 @@ const PROJECTS = [
       "Hệ thống đặt lịch salon: quản lý dịch vụ, lịch hẹn, hoá đơn, phân quyền, biểu đồ báo cáo.",
     tech: ["React", "Node.js", "SQL Server", "JWT", "Charting"],
     image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1600&auto=format&fit=crop",
+      "https://ext.same-assets.com/2406252202/1174023361.jpeg",
     links: { demo: "#", source: "#" },
   },
   {
@@ -69,7 +70,7 @@ const PROJECTS = [
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
     tech: ["Three.js", "Vite", "TypeScript"],
     image:
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
+      "https://i.postimg.cc/wTZkdrvg/Screenshot-2025-08-27-114610.png",
     links: { demo: "#", source: "#" },
   },
 ];
@@ -121,9 +122,9 @@ function NavBar() {
               <Linkedin className="w-5 h-5" />
             </Button>
           </a>
-          <a href={PROFILE.socials.website} target="_blank" rel="noreferrer">
-            <Button variant="default" className="gap-2">
-              <Globe className="w-4 h-4" /> Website
+          <a href={PROFILE.socials.facebook} target="_blank" rel="noreferrer">
+            <Button variant="ghost" size="icon" aria-label="Facebook">
+              <Facebook className="w-5 h-5" />
             </Button>
           </a>
         </div>
