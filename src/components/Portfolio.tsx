@@ -18,7 +18,7 @@ const PROFILE = {
     "Đam mê xây dựng sản phẩm web hiệu năng cao, UI/UX tinh gọn và kiến trúc bền vững. Quan tâm DevOps, Cloud-native và bảo mật.",
   socials: {
     github: "https://github.com/hoangnhan19032004",
-    linkedin: "https://www.linkedin.com/in/yourlinkedin/",
+    linkedin: "https://www.linkedin.com/in/nh%C3%A2n-ho%C3%A0ng-348a89380/",
     website: "https://yourdomain.dev",
     cv: "#",
   },
