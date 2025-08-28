@@ -3,28 +3,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  Github,
-  Linkedin,
-  Facebook,
-  Mail,
-  Phone,
-  ArrowRight,
-  Code2,
-  Cpu,
-  Rocket,
-  Globe,
-  Sun,
-  Moon,
-  MapPin,
-  FileText,
+  Github, Linkedin, Facebook, Mail, Phone, ArrowRight,
+  Code2, Cpu, Rocket, Globe, Sun, Moon, MapPin, FileText,
 } from "lucide-react";
 import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-  Tooltip,
+  ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar, Tooltip,
 } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,7 +20,7 @@ const PROFILE = {
   email: "hoangnhan93204@gmail.com",
   phone: "+84 903 126 432",
   summary:
-    "Đam mê xây dựng sản phẩm web hiệu năng cao, UI/UX tinh gọn và kiến trúc bền vững. Quan tâm DevOps, Cloud-native và bảo mật.",
+    "Lập trình viên web đam mê xây dựng sản phẩm hiệu năng cao, chú trọng UI/UX tinh gọn và kiến trúc bền vững. Luôn tìm hiểu về React, Node.js, .NET, SQL, quan tâm đến DevOps, Cloud-native và bảo mật, với mục tiêu tạo ra sản phẩm trải nghiệm tốt, vận hành ổn định và an toàn.",
   socials: {
     github: "https://github.com/hoangnhan19032004",
     linkedin: "https://www.linkedin.com/in/nh%C3%A2n-ho%C3%A0ng-348a89380/",
@@ -113,6 +96,29 @@ const fadeIn = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
+
+// 🔹 TypingEffect Component
+function TypingEffect({ text, speed = 35 }: { text: string; speed?: number }) {
+  const [displayed, setDisplayed] = React.useState("");
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayed((prev) => prev + text[index]);
+        setIndex((i) => i + 1);
+      }, speed);
+      return () => clearTimeout(timeout);
+    }
+  }, [index, text, speed]);
+
+  return (
+    <p className="mt-4 text-muted-foreground text-base md:text-lg max-w-xl">
+      {displayed}
+      <span className="inline-block w-1 bg-foreground animate-pulse ml-0.5"></span>
+    </p>
+  );
+}
 
 function SectionTitle({
   icon: Icon,
@@ -195,7 +201,7 @@ function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  return (
+   return (
     <section
       id="home"
       className="relative pt-28 md:pt-32 pb-16 overflow-hidden"
@@ -217,9 +223,10 @@ function Hero() {
               Xin chào, mình là{" "}
               <span className="text-primary">{PROFILE.name}</span>
             </h1>
-            <p className="mt-4 text-muted-foreground text-base md:text-lg max-w-xl">
-              {PROFILE.summary}
-            </p>
+
+            {/* 🔹 Typing effect summary */}
+            <TypingEffect text={PROFILE.summary} speed={35} />
+
             <div className="mt-6 flex flex-wrap gap-3">
               <a href={`mailto:${PROFILE.email}`}>
                 <Button className="gap-2">
