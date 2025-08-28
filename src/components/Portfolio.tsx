@@ -50,16 +50,16 @@ const PROJECTS = [
     title: "Swebi Coffee – E‑Commerce",
     description:
       "Website bán cà phê & trà với giỏ hàng, thanh toán, phân quyền Admin/Staff, tối ưu SEO & Core Web Vitals.",
-    tech: ["ASP.NET Core", "React", "SQL Server", "JWT", "VNPAY"],
+    tech: ["ASP.NET Core", "Entity Framework Core", "SQL Server", "Razor View", "Bootstrap","jQuery"],
     image:
       "https://i.postimg.cc/J0j2kWt3/477708579-9146410812062255-5667828213886147487-n.jpg",
     links: { demo: "#", source: "#" },
-  },
+  }, 
   {
     title: "HTSALON – Đặt lịch cắt tóc",
     description:
       "Hệ thống đặt lịch salon: quản lý dịch vụ, lịch hẹn, hoá đơn, phân quyền, biểu đồ báo cáo.",
-    tech: ["React", "Node.js", "SQL Server", "JWT", "Charting"],
+    tech: ["Frontend: React + TypeScript + TailwindCSS + Vite", "Backend: Node.js + Express (có thể kết nối database)","ESLint","Prettier","Netlify","Git"],
     image:
       "https://ext.same-assets.com/2406252202/1174023361.jpeg",
     links: { demo: "#", source: "#" },
@@ -68,7 +68,7 @@ const PROJECTS = [
     title: "Galaxy Playground – Three.js",
     description:
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
-    tech: ["Three.js", "Vite", "TypeScript"],
+    tech: ["Three.js", "HTML"],
     image:
       "https://i.postimg.cc/wTZkdrvg/Screenshot-2025-08-27-114610.png",
     links: { demo: "#", source: "#" },
