@@ -30,7 +30,7 @@ const SKILLS = [
   { subject: "Node.js", A: 88 },
   { subject: ".NET", A: 80 },
   { subject: "SQL", A: 75 },
-  { subject: "DevOps", A: 70 },
+  { subject: "DevOps", A: 60 },
   { subject: "Security", A: 65 },
 ];
 
