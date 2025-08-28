@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const PROFILE = {
-  name: "Phan Nguyễn Hoàng Nhân",
+  name: "CodeWithHN",
   role: "Full‑Stack Developer",
   location: "Ho Chi Minh City, Vietnam",
   email: "hoangnhan93204@gmail.com",
