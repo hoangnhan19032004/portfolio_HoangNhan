@@ -44,10 +44,9 @@ const TECH_STACK = [
   "React / Next.js",
   "ASP.NET Core",
   "Node.js / Express",
-  "SQL Server / PostgreSQL",
+  "SQL Server",
   "Tailwind CSS",
-  "Prisma / EF Core",
-  "Docker / CI-CD",
+  "EF Core",
 ];
 
 const PROJECTS = [
