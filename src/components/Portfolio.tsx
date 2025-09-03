@@ -79,7 +79,7 @@ const PROJECTS = [
       "Git",
     ],
     image: "https://ext.same-assets.com/2406252202/1174023361.jpeg",
-    links: { demo: "#", source: "#" },
+    links: { demo: "#", source: "https://github.com/hoangnhan19032004/hair-salon-site-main" },
   },
   {
     title: "Galaxy Playground – Three.js",
@@ -87,7 +87,7 @@ const PROJECTS = [
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
     tech: ["Three.js", "HTML"],
     image: "https://i.postimg.cc/wTZkdrvg/Screenshot-2025-08-27-114610.png",
-    links: { demo: "#", source: "#" },
+    links: { demo: "https://hoangnhan19032004.github.io/Galaxylovemain_HN/", source: "https://github.com/hoangnhan19032004/Galaxylovemain_HN" },
   },
 ];
 
@@ -154,7 +154,7 @@ function NavBar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <a href="#home" className="font-semibold tracking-tight text-lg">
+        <a href="" className="font-semibold tracking-tight text-lg">
           {PROFILE.name}
         </a>
         <div className="flex items-center gap-2">
