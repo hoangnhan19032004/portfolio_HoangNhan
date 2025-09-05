@@ -12,6 +12,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const PROFILE = {
   name: "CodeWithHN",
@@ -64,7 +65,7 @@ const PROJECTS = [
     ],
     image:
       "https://i.postimg.cc/J0j2kWt3/477708579-9146410812062255-5667828213886147487-n.jpg",
-    links: { demo: "#", source: "https://github.com/hoangnhan19032004/Web_CuaHangCafe_MainSwebi" },
+    links: { demo: "/test-404", source: "https://github.com/hoangnhan19032004/Web_CuaHangCafe_MainSwebi" },
   },
   {
     title: "HTSALON – Đặt lịch cắt tóc",
@@ -79,7 +80,7 @@ const PROJECTS = [
       "Git",
     ],
     image: "https://ext.same-assets.com/2406252202/1174023361.jpeg",
-    links: { demo: "#", source: "https://github.com/hoangnhan19032004/hair-salon-site-main" },
+    links: { demo: "/test-404", source: "https://github.com/hoangnhan19032004/hair-salon-site-main" },
   },
   {
     title: "Galaxy Playground – Three.js",
