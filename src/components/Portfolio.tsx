@@ -65,7 +65,7 @@ const PROJECTS = [
     ],
     image:
       "https://i.postimg.cc/J0j2kWt3/477708579-9146410812062255-5667828213886147487-n.jpg",
-    links: { demo: "/test-404", source: "https://github.com/hoangnhan19032004/Web_CuaHangCafe_MainSwebi" },
+    links: { demo: "https://drive.google.com/file/d/1svqI6pNCVDE5u8Px6Jvi8_MHWq0oJHN_/view?usp=sharing", source: "https://github.com/hoangnhan19032004/Web_CuaHangCafe_MainSwebi" },
   },
   {
     title: "HTSALON – Đặt lịch cắt tóc",
@@ -79,8 +79,8 @@ const PROJECTS = [
       "Netlify",
       "Git",
     ],
-    image: "https://ext.same-assets.com/2406252202/1174023361.jpeg",
-    links: { demo: "/test-404", source: "https://github.com/hoangnhan19032004/hair-salon-site-main" },
+    image: "https://i.postimg.cc/76Zfy8PG/Screenshot-2026-03-19-150802.png",
+    links: { demo: "https://drive.google.com/file/d/1Vb7VuIh38ISjFZrqWcGrNMTNB0d0aw52/view?usp=sharing", source: "https://github.com/hoangnhan19032004/hair-salon-site-main" },
   },
   {
     title: "Galaxy Playground – Three.js",
@@ -88,7 +88,23 @@ const PROJECTS = [
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
     tech: ["Three.js", "HTML"],
     image: "https://i.postimg.cc/wTZkdrvg/Screenshot-2025-08-27-114610.png",
-    links: { demo: "https://hoangnhan19032004.github.io/Galaxylovemain_HN/", source: "https://github.com/hoangnhan19032004/Galaxylovemain_HN" },
+    links: { demo: "https://hoangnhan19032004.github.io/Galaxylovemain_HN-main/", source: "https://github.com/hoangnhan19032004/Galaxylovemain_HN-main" },
+  },
+  {
+    title: "Salon Booking App",
+    description:
+      "Ứng dụng Flutter đặt lịch salon với giao diện sạch, hiện đại. Hỗ trợ các chức năng như Chatbot(AI), hệ thống đặt lịch (reservation/booking), và xác thực Firebase.",
+    tech: ["Flutter", "Firebase", "Dart"],
+    image: "https://i.postimg.cc/Zq1kGJz6/z7402906345979-8b80fa58fc7b8dfd94d82d40b7e11017.jpg",
+    links: { demo: "https://drive.google.com/file/d/1h8ZUrNkR_SlItjHX4-c4tJbyuUaZ_UNW/view?usp=sharing", source: "https://github.com/hoangnhan19032004/salon_app-admin-with-adminlogin-fixed2" },
+  },
+  {
+    title: "EBook-Store App",
+    description:
+      "Ứng dụng Flutter mua sắm sách điện tử với giao diện sạch, hiện đại. Hỗ trợ các chức năng như Chatbot(AI), hệ thống đặt hàng (reservation/booking), và xác thực Firebase.",
+    tech: ["MVC", "SQL Server", "API","Momo Payment","VNPay"],
+    image: "https://i.postimg.cc/SQw0T6pJ/Screenshot-2026-03-25-233549.png",
+    links: { demo: "https://drive.google.com/file/d/1h5SRnNRjpdyS1dkL49w1dyaFZiBvdHVy/view?usp=sharing", source: "https://github.com/hoangnhan19032004/salon_app-admin-with-adminlogin-fixed2" },
   },
 ];
 
@@ -304,58 +320,122 @@ function Hero() {
 }
 
 function Projects() {
+  const [active, setActive] = React.useState<number>(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // 🔥 KEYBOARD (chỉ chạy khi focus vào section)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") {
+      setActive((prev) => (prev + 1) % PROJECTS.length);
+    }
+
+    if (e.key === "ArrowLeft") {
+      setActive((prev) =>
+        prev === 0 ? PROJECTS.length - 1 : prev - 1
+      );
+    }
+  };
+
   return (
-    <section id="projects" className="py-12 md:py-16">
+    <section id="projects" className="py-20">
       <div className="max-w-6xl mx-auto px-4">
-        <SectionTitle
-          icon={Code2}
-          title="Dự án nổi bật"
-          subtitle="Một vài sản phẩm mình đã xây dựng"
-        />
-        <div className="grid md:grid-cols-3 gap-6">
-          {PROJECTS.map((p) => (
-            <motion.div
-              key={p.title}
-              variants={fadeIn}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-            >
-              <Card className="group overflow-hidden rounded-2xl border bg-background/60 hover:shadow-lg transition">
-                <div className="aspect-[16/10] overflow-hidden">
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition"
-                  />
-                </div>
-                <CardContent className="p-5">
-                  <h4 className="font-semibold text-lg">{p.title}</h4>
-                  <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">
-                    {p.description}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {p.tech.map((t) => (
-                      <Badge key={t} variant="outline" className="text-[11px]">
-                        {t}
-                      </Badge>
-                    ))}
+
+        {/* 🔥 TITLE */}
+        <div className="relative z-10">
+          <SectionTitle
+            icon={Code2}
+            title="Dự án nổi bật"
+            subtitle="Những sản phẩm mà tôi đã tham gia và học hỏi được nhiều nhất"
+          />
+        </div>
+
+        {/* 🔥 PROJECT LIST */}
+        <div
+          ref={containerRef}
+          tabIndex={0} // 🔥 cho phép focus
+          onKeyDown={handleKeyDown}
+          className="relative z-0 mt-12 flex justify-center gap-6 flex-wrap md:flex-nowrap outline-none"
+        >
+          {PROJECTS.map((p, i) => {
+            const isActive = active === i;
+
+            return (
+              <motion.div
+                key={i}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => containerRef.current?.focus()} // 🔥 click là focus luôn
+                animate={{
+                  scale: isActive ? 1.08 : 0.95,
+                  y: isActive ? -6 : 0,
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="cursor-pointer w-[300px]"
+              >
+                <Card
+                  className={`group overflow-hidden rounded-2xl border transition-all duration-500 ${
+                    isActive
+                      ? "shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-primary"
+                      : "bg-background/60"
+                  }`}
+                >
+                  {/* IMAGE */}
+                  <div className="aspect-[16/10] overflow-hidden relative">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    <a href={p.links.demo} target="_blank" rel="noreferrer">
-                      <Button size="sm" className="gap-1">
-                        Demo <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </a>
-                    <a href={p.links.source} target="_blank" rel="noreferrer">
-                      <Button size="sm" variant="secondary">
-                        Source
-                      </Button>
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+
+                  {/* CONTENT */}
+                  <CardContent className="p-5">
+                    <h4 className="font-semibold text-lg">{p.title}</h4>
+
+                    <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">
+                      {p.description}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {p.tech.map((t, idx) => (
+                        <Badge key={idx} variant="outline" className="text-[11px]">
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      <a href={p.links.demo} target="_blank">
+                        <Button size="sm" className="gap-1">
+                          Demo <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </a>
+
+                      <a href={p.links.source} target="_blank">
+                        <Button size="sm" variant="secondary">
+                          Source
+                        </Button>
+                      </a>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* 🔥 DOTS */}
+        <div className="flex justify-center mt-10 gap-3">
+          {PROJECTS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className={`transition-all duration-300 rounded-full ${
+                i === active
+                  ? "w-8 h-3 bg-primary"
+                  : "w-3 h-3 bg-muted hover:bg-primary/50"
+              }`}
+            />
           ))}
         </div>
       </div>
