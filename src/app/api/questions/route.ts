@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: savedQuestion.id, token: savedQuestion.visitor_token, message: "Đã gửi câu hỏi cho Hoàng Nhân." }, { status: 201 });
   } catch (error) {
     console.error("Question submission failed:", error);
-    return NextResponse.json({ error: "Chưa thể lưu câu hỏi vào bộ nhớ local." }, { status: 503 });
+    return NextResponse.json({ error: "Chưa thể lưu câu hỏi lúc này." }, { status: 503 });
   }
 }
 
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ questions: await listQuestions() });
   } catch (error) {
     console.error("Question inbox failed:", error);
-    return NextResponse.json({ error: "Chưa thể tải inbox local." }, { status: 503 });
+    return NextResponse.json({ error: "Chưa thể tải inbox lúc này." }, { status: 503 });
   }
 }
 
@@ -87,6 +87,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Đã lưu câu trả lời và gửi trực tiếp vào chat." });
   } catch (error) {
     console.error("Question reply failed:", error);
-    return NextResponse.json({ error: "Chưa thể gửi câu trả lời local." }, { status: 503 });
+    return NextResponse.json({ error: "Chưa thể gửi câu trả lời lúc này." }, { status: 503 });
   }
 }
