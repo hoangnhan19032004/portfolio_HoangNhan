@@ -12,6 +12,13 @@ function escapeHtml(value: string) {
   })[character] || character);
 }
 
+function storageError(error: unknown) {
+  const code = error instanceof Error ? error.message : "UNKNOWN";
+  if (code === "SUPABASE_CONFIG_MISSING") return "Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trên hosting.";
+  if (code.startsWith("SUPABASE_HTTP_")) return `Supabase từ chối yêu cầu (${code.replace("SUPABASE_HTTP_", "HTTP ")}).`;
+  return "Không thể kết nối Supabase từ hosting.";
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -40,7 +47,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: savedQuestion.id, token: savedQuestion.visitor_token, message: "Đã gửi câu hỏi cho Hoàng Nhân." }, { status: 201 });
   } catch (error) {
     console.error("Question submission failed:", error);
-    return NextResponse.json({ error: "Chưa thể lưu câu hỏi lúc này." }, { status: 503 });
+    return NextResponse.json({ error: storageError(error) }, { status: 503 });
   }
 }
 
@@ -63,7 +70,7 @@ export async function GET(request: Request) {
     console.error("Question inbox failed:", error);
     return NextResponse.json({
       questions: [],
-      warning: "Đăng nhập thành công nhưng chưa thể kết nối inbox Supabase.",
+      warning: storageError(error),
     });
   }
 }
@@ -90,6 +97,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Đã lưu câu trả lời và gửi trực tiếp vào chat." });
   } catch (error) {
     console.error("Question reply failed:", error);
-    return NextResponse.json({ error: "Chưa thể gửi câu trả lời lúc này." }, { status: 503 });
+    return NextResponse.json({ error: storageError(error) }, { status: 503 });
   }
 }

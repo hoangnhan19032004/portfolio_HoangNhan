@@ -17,7 +17,7 @@ type SupabaseQuestion = Omit<VisitorQuestion, "visitor_token"> & {
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Supabase environment variables are missing");
+  if (!url || !key) throw new Error("SUPABASE_CONFIG_MISSING");
   return { url: url.replace(/\/$/, ""), key };
 }
 
@@ -37,7 +37,7 @@ function supabaseRequest(path: string, init: RequestInit = {}) {
 
 export async function listQuestions() {
   const response = await supabaseRequest("?select=*&order=created_at.desc");
-  if (!response.ok) throw new Error(`Supabase list failed: ${response.status}`);
+  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
   return (await response.json()) as SupabaseQuestion[];
 }
 
@@ -56,7 +56,7 @@ export async function addQuestion(input: Pick<VisitorQuestion, "visitor_name" | 
     headers: { Prefer: "return=representation" },
     body: JSON.stringify(question),
   });
-  if (!response.ok) throw new Error(`Supabase insert failed: ${response.status}`);
+  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
   const [savedQuestion] = (await response.json()) as SupabaseQuestion[];
   return savedQuestion;
 }
@@ -67,7 +67,7 @@ export async function answerQuestion(id: string, answer: string) {
     headers: { Prefer: "return=representation" },
     body: JSON.stringify({ answer, status: "answered", answered_at: new Date().toISOString() }),
   });
-  if (!response.ok) throw new Error(`Supabase update failed: ${response.status}`);
+  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
   const [question] = (await response.json()) as SupabaseQuestion[];
   return question || null;
 }
