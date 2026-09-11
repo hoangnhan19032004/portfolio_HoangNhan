@@ -83,8 +83,7 @@ const PROJECTS = [
       "Bootstrap",
       "jQuery",
     ],
-    image:
-      "https://i.postimg.cc/J0j2kWt3/477708579-9146410812062255-5667828213886147487-n.jpg",
+    image: "/projects/Swebi.jpg",
     links: {
       demo: "https://drive.google.com/file/d/1svqI6pNCVDE5u8Px6Jvi8_MHWq0oJHN_/view?usp=sharing",
       source: "https://github.com/hoangnhan19032004/Web_CuaHangCafe_MainSwebi",
@@ -102,7 +101,7 @@ const PROJECTS = [
       "Tailwind",
       "Netlify",
     ],
-    image: "https://i.postimg.cc/76Zfy8PG/Screenshot-2026-03-19-150802.png",
+    image: "/projects/Hairsalon.jpg",
     links: {
       demo: "https://drive.google.com/file/d/1Vb7VuIh38ISjFZrqWcGrNMTNB0d0aw52/view?usp=sharing",
       source: "https://github.com/hoangnhan19032004/hair-salon-site-main",
@@ -113,7 +112,7 @@ const PROJECTS = [
     description:
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
     tech: ["Three.js", "HTML", "WebGL"],
-    image: "https://i.postimg.cc/wTZkdrvg/Screenshot-2025-08-27-114610.png",
+    image: "/projects/Galaxy.png",
     links: {
       demo: "https://hoangnhan19032004.github.io/Galaxylovemain_HN-main/",
       source: "https://github.com/hoangnhan19032004/Galaxylovemain_HN-main",
@@ -124,7 +123,7 @@ const PROJECTS = [
     description:
       "Ứng dụng Flutter đặt lịch salon với giao diện sạch, hiện đại. Hỗ trợ các chức năng đặt lịch và xác thực Firebase.",
     tech: ["Flutter", "Firebase", "Dart"],
-    image: "https://i.postimg.cc/Zq1kGJz6/z7402906345979-8b80fa58fc7b8dfd94d82d40b7e11017.jpg",
+    image: "/projects/Salonbookingapp.png",
     links: {
       demo: "https://drive.google.com/file/d/1h8ZUrNkR_SlItjHX4-c4tJbyuUaZ_UNW/view?usp=sharing",
       source: "https://github.com/hoangnhan19032004/salon_app-admin-with-adminlogin-fixed2",
@@ -135,10 +134,10 @@ const PROJECTS = [
     description:
       "Ứng dụng mua sắm sách điện tử với trải nghiệm tối ưu, thanh toán Momo/VNPay và hệ thống quản lý đơn hàng.",
     tech: ["MVC", "SQL Server", "API", "Momo", "VNPay"],
-    image: "https://i.postimg.cc/SQw0T6pJ/Screenshot-2026-03-25-233549.png",
+    image: "/projects/Ebook.png",
     links: {
       demo: "https://drive.google.com/file/d/1h5SRnNRjpdyS1dkL49w1dyaFZiBvdHVy/view?usp=sharing",
-      source: "https://github.com/hoangnhan19032004/salon_app-admin-with-adminlogin-fixed2",
+      source: "https://github.com/hoangnhan19032004/EBookStore-Project",
     },
   },
 ];
