@@ -72,7 +72,7 @@ export default function AdminPage() {
     setQuestions(data.questions);
     setIsLoggedIn(true);
     setSelectedId((current) => current || data.questions[0]?.id || null);
-    setMessage("");
+    setMessage(data.warning || "");
   };
 
   const toggleTheme = () => {

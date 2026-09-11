@@ -61,7 +61,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ questions: await listQuestions() });
   } catch (error) {
     console.error("Question inbox failed:", error);
-    return NextResponse.json({ error: "Chưa thể tải inbox lúc này." }, { status: 503 });
+    return NextResponse.json({
+      questions: [],
+      warning: "Đăng nhập thành công nhưng chưa thể kết nối inbox Supabase.",
+    });
   }
 }
 
