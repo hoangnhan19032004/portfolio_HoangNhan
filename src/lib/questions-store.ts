@@ -15,24 +15,38 @@ type SupabaseQuestion = Omit<VisitorQuestion, "visitor_token"> & {
 };
 
 function getSupabaseConfig() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const configuredUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("SUPABASE_CONFIG_MISSING");
-  return { url: url.replace(/\/$/, ""), key };
+  if (!configuredUrl || !key) throw new Error("SUPABASE_CONFIG_MISSING");
+
+  let url: URL;
+  try {
+    url = new URL(configuredUrl.trim());
+  } catch {
+    throw new Error("SUPABASE_URL_INVALID");
+  }
+
+  if (!url.hostname.endsWith(".supabase.co")) throw new Error("SUPABASE_URL_INVALID");
+  url.pathname = "";
+  return { url: url.toString().replace(/\/$/, ""), key: key.trim() };
 }
 
-function supabaseRequest(path: string, init: RequestInit = {}) {
+async function supabaseRequest(path: string, init: RequestInit = {}) {
   const { url, key } = getSupabaseConfig();
-  return fetch(`${url}/rest/v1/visitor_questions${path}`, {
-    ...init,
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      ...(init.headers || {}),
-    },
-    cache: "no-store",
-  });
+  try {
+    return await fetch(`${url}/rest/v1/visitor_questions${path}`, {
+      ...init,
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        ...(init.headers || {}),
+      },
+      cache: "no-store",
+    });
+  } catch {
+    throw new Error("SUPABASE_CONNECTION_FAILED");
+  }
 }
 
 export async function listQuestions() {
