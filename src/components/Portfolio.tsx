@@ -626,8 +626,8 @@ function Footer() {
 }
 
 type ChatMessage = {
-  id: number;
-  role: "user" | "assistant";
+  id: string | number;
+  role: "user" | "assistant" | "admin";
   content: string;
 };
 
@@ -699,73 +699,81 @@ function ChatWidget() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [visitorName, setVisitorName] = React.useState("");
+  const [visitorEmail, setVisitorEmail] = React.useState("");
   const [questionStatus, setQuestionStatus] = React.useState("");
   const [questionSession, setQuestionSession] = React.useState<{ id: string; token: string } | null>(null);
-  const [hasReceivedReply, setHasReceivedReply] = React.useState(false);
-  const [isSubmittingQuestion, setIsSubmittingQuestion] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [messages, setMessages] = React.useState<ChatMessage[]>([
-    {
-      id: 1,
-      role: "assistant",
-      content: "Chào bạn! Mình là Hoàng Nhân. Bạn muốn hỏi về công nghệ, dự án, kinh nghiệm hay một công việc mới?",
-    },
-  ]);
-  const lastQuestion = [...messages].reverse().find((message) => message.role === "user")?.content || "Xin chào Hoàng Nhân, mình có một câu hỏi về portfolio.";
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+
   React.useEffect(() => {
-    if (!questionSession || hasReceivedReply) return;
+    const saved = window.localStorage.getItem("portfolio-chat-session");
+    if (!saved) return;
+    try {
+      const session = JSON.parse(saved) as { id: string; token: string; name?: string; email?: string };
+      if (session.id && session.token) {
+        setQuestionSession({ id: session.id, token: session.token });
+        setVisitorName(session.name || "");
+        setVisitorEmail(session.email || "");
+      }
+    } catch {
+      window.localStorage.removeItem("portfolio-chat-session");
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!questionSession) return;
 
     const checkReply = async () => {
       try {
         const response = await fetch(`/api/questions?id=${encodeURIComponent(questionSession.id)}&token=${encodeURIComponent(questionSession.token)}`);
         if (!response.ok) return;
         const data = await response.json();
-        if (data.status === "answered" && data.answer) {
-          setMessages((current) => [...current, { id: Date.now(), role: "assistant", content: `Hoàng Nhân trả lời:\n\n${data.answer}` }]);
-          setQuestionStatus("Bạn đã nhận được phản hồi trực tiếp.");
-          setHasReceivedReply(true);
-        }
+        if (Array.isArray(data.messages)) setMessages(data.messages.map((message: { role: ChatMessage["role"]; content: string; created_at: string }, index: number) => ({ ...message, id: `${message.created_at}-${index}` })));
       } catch {
-        // The next polling cycle will retry while the visitor remains on the page.
       }
     };
 
     checkReply();
     const interval = window.setInterval(checkReply, 3000);
     return () => window.clearInterval(interval);
-  }, [questionSession, hasReceivedReply]);
+  }, [questionSession]);
 
-  const submitQuestion = async () => {
-    if (!lastQuestion || isSubmittingQuestion) {
-      setQuestionStatus("Hãy đặt câu hỏi trước khi gửi.");
+  const startSession = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!visitorName.trim() || !visitorEmail.includes("@") || isLoading) {
+      setQuestionStatus("Vui lòng nhập họ tên và email hợp lệ.");
       return;
     }
 
-    setIsSubmittingQuestion(true);
+    setIsLoading(true);
     setQuestionStatus("");
     try {
       const response = await fetch("/api/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: visitorName, question: lastQuestion }),
+        body: JSON.stringify({ name: visitorName, email: visitorEmail }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Không thể gửi câu hỏi.");
+      if (!response.ok) throw new Error(data.error || "Không thể bắt đầu phiên chat.");
       setQuestionSession({ id: data.id, token: data.token });
-      setHasReceivedReply(false);
-      setQuestionStatus("Đã gửi. Bạn có thể chờ phản hồi ngay trong khung chat.");
-      setVisitorName("");
+      setMessages([]);
+      window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ id: data.id, token: data.token, name: visitorName.trim(), email: visitorEmail.trim() }));
     } catch (error) {
       setQuestionStatus(error instanceof Error ? error.message : "Không thể gửi câu hỏi lúc này.");
     } finally {
-      setIsSubmittingQuestion(false);
+      setIsLoading(false);
     }
+  };
+
+  const saveMessage = async (role: "user" | "assistant", content: string) => {
+    if (!questionSession) return;
+    await fetch("/api/questions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "message", ...questionSession, role, content }) });
   };
 
   const sendMessage = async (event?: React.FormEvent, preset?: string) => {
     event?.preventDefault();
     const content = (preset ?? input).trim();
-    if (!content || isLoading) return;
+    if (!content || isLoading || !questionSession) return;
 
     const userMessage: ChatMessage = { id: Date.now(), role: "user", content };
     setMessages((current) => [...current, userMessage]);
@@ -773,23 +781,23 @@ function ChatWidget() {
     setIsLoading(true);
 
     try {
+      await saveMessage("user", content);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [...messages, userMessage].map(({ role, content: text }) => ({ role, content: text })) }),
       });
 
-      if (!response.ok) throw new Error("AI unavailable");
-      const data = await response.json();
-      setMessages((current) => [
-        ...current,
-        { id: Date.now() + 1, role: "assistant", content: data.message },
-      ]);
+      const assistantContent = response.ok ? (await response.json()).message : getLocalChatReply(content);
+      setMessages((current) => [...current, { id: Date.now() + 1, role: "assistant", content: assistantContent }]);
+      await saveMessage("assistant", assistantContent);
     } catch {
+      const assistantContent = getLocalChatReply(content);
       setMessages((current) => [
         ...current,
-        { id: Date.now() + 1, role: "assistant", content: getLocalChatReply(content) },
+        { id: Date.now() + 1, role: "assistant", content: assistantContent },
       ]);
+      await saveMessage("assistant", assistantContent);
     } finally {
       setIsLoading(false);
     }
@@ -810,11 +818,12 @@ function ChatWidget() {
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Đóng cửa sổ chat"><X className="chat-close h-4 w-4 text-slate-300" /></Button>
           </div>
 
+          {!questionSession ? <form onSubmit={startSession} className="space-y-3 p-5"><div><p className="text-sm font-semibold text-white">Bắt đầu cuộc trò chuyện</p><p className="mt-1 text-xs leading-5 text-slate-400">Vui lòng cung cấp họ tên và email để lưu lại phiên chat và nhận phản hồi.</p></div><input required value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder="Họ và tên" className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><input required type="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} placeholder="Địa chỉ email" className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><Button type="submit" disabled={isLoading} className="w-full rounded-xl bg-sky-500 text-white">{isLoading ? "Đang tạo phiên..." : "Bắt đầu chat"}</Button>{questionStatus && <p className="text-xs text-rose-300">{questionStatus}</p>}</form> : <>
           <div className="chat-messages flex max-h-[min(55vh,420px)] min-h-[260px] flex-col gap-3 overflow-y-auto p-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 {message.role === "assistant" && <div className="mb-0.5 rounded-lg bg-sky-400/15 p-1.5 text-sky-300"><Bot className="h-3.5 w-3.5" /></div>}
-                <div className={`chat-bubble max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${message.role === "user" ? "chat-user-bubble rounded-br-md bg-sky-500 text-white" : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"}`}>
+                <div className={`chat-bubble max-w-[82%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${message.role === "user" ? "chat-user-bubble rounded-br-md bg-sky-500 text-white" : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"}`}>
                   {message.content}
                 </div>
                 {message.role === "user" && <div className="mb-0.5 rounded-lg bg-white/10 p-1.5 text-slate-300"><User className="h-3.5 w-3.5" /></div>}
@@ -823,20 +832,14 @@ function ChatWidget() {
             {isLoading && <div className="flex items-center gap-2 text-xs text-slate-400"><Bot className="h-4 w-4 text-sky-300" /> Đang suy nghĩ...</div>}
           </div>
 
-          {messages.length === 1 && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS.map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
+          {messages.length === 0 && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS.map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
 
           <form onSubmit={sendMessage} className="flex items-center gap-2 border-t border-white/10 p-3">
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Đặt câu hỏi bất kỳ..." aria-label="Tin nhắn" className="chat-input min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/60" />
             <Button type="submit" size="icon" disabled={!input.trim() || isLoading} aria-label="Gửi tin nhắn" className="shrink-0 rounded-xl bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-40"><Send className="h-4 w-4" /></Button>
           </form>
-          <div className="border-t border-white/10 px-4 py-3">
-            <p className="mb-2 text-xs text-slate-400">Muốn Hoàng Nhân trả lời trực tiếp ngay tại đây?</p>
-            <input value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder="Tên của bạn (không bắt buộc)" aria-label="Tên của bạn" className="chat-input mb-2 min-w-0 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-white outline-none focus:border-sky-400/60" />
-            <button type="button" onClick={submitQuestion} disabled={isSubmittingQuestion} className="chat-owner-link mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-sky-400/20 bg-sky-400/10 px-3 py-2 text-center text-xs font-semibold text-sky-200 transition hover:bg-sky-400/20 disabled:opacity-50">
-              <MessageCircle className="h-3.5 w-3.5" /> {isSubmittingQuestion ? "Đang gửi..." : "Gửi và chờ trả lời trong chat"}
-            </button>
-            {questionStatus && <p className="mt-2 text-center text-[11px] text-sky-300">{questionStatus}</p>}
-          </div>
+          <p className="border-t border-white/10 px-4 py-3 text-center text-[11px] text-slate-500">Phiên chat được lưu để Hoàng Nhân có thể tiếp tục phản hồi.</p>
+          </>}
         </Card>
       )}
       <Button onClick={() => setIsOpen((open) => !open)} aria-label={isOpen ? "Đóng chat" : "Mở chat với trợ lý AI"} className="chat-launcher h-14 w-14 rounded-full bg-sky-500 p-0 text-white shadow-xl shadow-sky-500/35 hover:scale-105 hover:bg-sky-400">

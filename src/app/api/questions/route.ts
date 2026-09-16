@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest, sendEmail } from "@/lib/server";
-import { addQuestion, answerQuestion, listQuestions } from "@/lib/questions-store";
+import { appendChatMessage, answerQuestion, listQuestions, startChat } from "@/lib/questions-store";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -24,29 +24,35 @@ function storageError(error: unknown) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const name = String(body.name || "Khách truy cập").trim();
-    const email = String(body.email || "").trim();
-    const question = String(body.question || "").trim();
+    const action = String(body.action || "start");
 
-    if (!question) {
-      return NextResponse.json({ error: "Vui lòng nhập câu hỏi." }, { status: 400 });
+    if (action === "message") {
+      const id = String(body.id || "").trim();
+      const token = String(body.token || "").trim();
+      const content = String(body.content || "").trim();
+      const role = body.role === "assistant" ? "assistant" : "user";
+      if (!id || !token || !content) return NextResponse.json({ error: "Dữ liệu phiên chat không hợp lệ." }, { status: 400 });
+      const session = await appendChatMessage(id, token, { role, content: content.slice(0, 4000) });
+      if (!session) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
+      return NextResponse.json({ messages: session.messages || [] });
     }
 
-    const savedQuestion = await addQuestion({
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim();
+
+    if (!name || !email || !email.includes("@")) {
+      return NextResponse.json({ error: "Vui lòng cung cấp họ tên và địa chỉ email trước khi chat." }, { status: 400 });
+    }
+
+    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    const visitorIp = forwardedFor || request.headers.get("x-real-ip") || "unknown";
+    const savedQuestion = await startChat({
       visitor_name: name.slice(0, 120),
-      visitor_email: email.includes("@") ? email.slice(0, 200) : "",
-      question: question.slice(0, 4000),
+      visitor_email: email.slice(0, 200),
+      visitor_ip: visitorIp.slice(0, 100),
     });
 
-    if (email.includes("@")) {
-      await sendEmail({
-        to: process.env.OWNER_EMAIL || "hoangnhan93204@gmail.com",
-        subject: `Câu hỏi mới từ ${name}`,
-        html: `<p>Bạn có một câu hỏi mới từ <strong>${escapeHtml(name)}</strong> (${escapeHtml(email)}).</p><p>${escapeHtml(question).replace(/\n/g, "<br />")}</p><p>Mở trang quản trị để trả lời khách.</p>`,
-      });
-    }
-
-    return NextResponse.json({ id: savedQuestion.id, token: savedQuestion.visitor_token, message: "Đã gửi câu hỏi cho Hoàng Nhân." }, { status: 201 });
+    return NextResponse.json({ id: savedQuestion.id, token: savedQuestion.visitor_token, messages: savedQuestion.messages || [] }, { status: 201 });
   } catch (error) {
     console.error("Question submission failed:", error);
     return NextResponse.json({ error: storageError(error) }, { status: 503 });
@@ -62,7 +68,7 @@ export async function GET(request: Request) {
     try {
       const question = (await listQuestions()).find((item) => item.id === questionId && item.visitor_token === visitorToken);
       if (!question) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
-      return NextResponse.json({ status: question.status, answer: question.answer, answered_at: question.answered_at });
+      return NextResponse.json({ status: question.status, answer: question.answer, messages: question.messages || [], answered_at: question.answered_at });
     } catch (error) {
       return NextResponse.json({ error: storageError(error) }, { status: 503 });
     }
