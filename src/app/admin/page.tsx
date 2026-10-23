@@ -20,17 +20,42 @@ export default function AdminPage() {
   const [dark, setDark] = React.useState(true);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
-  const loadQuestions = async (secret = password) => {
-    setLoading(true);
-    const response = await fetch("/api/questions", { headers: { "x-admin-password": secret } });
-    const data = await response.json();
-    setLoading(false);
-    if (!response.ok) { setMessage(data.error || "Mật khẩu không đúng."); return; }
-    setQuestions(data.questions || []);
-    setSelectedId((current) => current || data.questions?.[0]?.id || null);
-    setLoggedIn(true);
-    setMessage(data.warning || "");
-  };
+  const loadQuestions = React.useCallback(async (secret = password, silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const response = await fetch("/api/questions", {
+        headers: { "x-admin-password": secret },
+        cache: "no-store",
+      });
+      const data = await response.json();
+      if (!response.ok) { setMessage(data.error || "Mật khẩu không đúng."); return; }
+      setQuestions(data.questions || []);
+      setSelectedId((current) => current || data.questions?.[0]?.id || null);
+      setLoggedIn(true);
+      if (data.warning || !silent) setMessage(data.warning || "");
+    } catch (error) {
+      setMessage(error instanceof Error ? `Không thể tải danh sách chat: ${error.message}` : "Không thể tải danh sách chat.");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [password]);
+
+  React.useEffect(() => {
+    if (!loggedIn) return;
+    let active = true;
+    let timeout: number;
+
+    const refresh = async () => {
+      await loadQuestions(password, true);
+      if (active) timeout = window.setTimeout(refresh, 3000);
+    };
+
+    timeout = window.setTimeout(refresh, 3000);
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+    };
+  }, [loggedIn, loadQuestions, password]);
 
   const selected = questions.find((item) => item.id === selectedId) || questions[0];
   const pendingCount = questions.filter((item) => item.status === "pending").length;
