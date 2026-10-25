@@ -8,7 +8,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { messages } = await request.json();
+    const { messages, lang } = await request.json();
+    const systemPrompt = lang === "en"
+      ? "You are Hoang Nhan's portfolio assistant. He is a Full-Stack Developer in Ho Chi Minh City. Reply in concise, friendly English. Only state information available in the portfolio; if you do not know something, direct the visitor to hoangnhan93204@gmail.com."
+      : "Bạn là trợ lý portfolio của Hoàng Nhân, một Full-Stack Developer ở Ho Chi Minh City. Trả lời bằng tiếng Việt, ngắn gọn, thân thiện. Chỉ khẳng định thông tin có trong portfolio; nếu không biết, hãy hướng người dùng liên hệ qua email hoangnhan93204@gmail.com.";
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -20,7 +23,7 @@ export async function POST(request: Request) {
         messages: [
           {
             role: "system",
-            content: "Bạn là trợ lý portfolio của Hoàng Nhân, một Full-Stack Developer ở Ho Chi Minh City. Trả lời bằng tiếng Việt, ngắn gọn, thân thiện. Chỉ khẳng định thông tin có trong portfolio; nếu không biết, hãy hướng người dùng liên hệ qua email hoangnhan93204@gmail.com.",
+            content: systemPrompt,
           },
           ...messages,
         ],

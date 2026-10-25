@@ -131,6 +131,17 @@ html:not(.dark) .chat-owner-link {
   background-color: rgba(14, 165, 233, 0.08);
 }
 
+html:not(.dark) .case-study-dialog {
+  background-color: #ffffff;
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.25);
+}
+
+html:not(.dark) .case-study-panel {
+  border-color: rgba(15, 23, 42, 0.1);
+  background-color: #f8fafc;
+}
+
 * {
   box-sizing: border-box;
   border-color: rgba(148, 163, 184, 0.2);

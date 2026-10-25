@@ -1,15 +1,21 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  ArrowUp,
   Bot,
+  CheckCircle2,
   Code2,
   Cpu,
+  ExternalLink,
   Facebook,
   FileText,
   Github,
+  Languages,
+  Layers3,
+  Lightbulb,
   Linkedin,
   Mail,
   MapPin,
@@ -17,6 +23,7 @@ import {
   Moon,
   Phone,
   Rocket,
+  Search,
   Send,
   Sun,
   User,
@@ -42,6 +49,8 @@ const PROFILE = {
   phone: "+84 903 126 432",
   summary:
     "Lập trình viên web đam mê xây dựng sản phẩm hiệu năng cao, chú trọng UI/UX tinh gọn và kiến trúc bền vững. Luôn tìm hiểu về React, Node.js, .NET, SQL, quan tâm đến DevOps, Cloud-native và bảo mật, với mục tiêu tạo ra sản phẩm trải nghiệm tốt, vận hành ổn định và an toàn.",
+  summaryEn:
+    "A web developer passionate about building high-performance products with thoughtful UI/UX and sustainable architecture. I work with React, Node.js, .NET, and SQL, and I'm interested in DevOps, cloud-native technologies, and security.",
   socials: {
     github: "https://github.com/hoangnhan19032004",
     linkedin: "https://www.linkedin.com/in/nh%C3%A2n-ho%C3%A0ng-348a89380/",
@@ -70,11 +79,42 @@ const TECH_STACK = [
   "EF Core",
 ];
 
-const PROJECTS = [
+type Project = {
+  title: string;
+  titleEn?: string;
+  description: string;
+  descriptionEn: string;
+  caseStudy: {
+    context: { vi: string; en: string };
+    approach: { vi: string; en: string };
+    highlights: { vi: string[]; en: string[] };
+  };
+  tech: string[];
+  image: string;
+  links: { demo: string; source: string };
+};
+
+const PROJECTS: Project[] = [
   {
     title: "Swebi Coffee – E-Commerce",
     description:
       "Website bán cà phê & trà với giỏ hàng, thanh toán, phân quyền Admin/Staff, tối ưu SEO & Core Web Vitals.",
+    descriptionEn:
+      "A coffee and tea e-commerce website with cart, checkout, Admin/Staff roles, SEO, and Core Web Vitals optimizations.",
+    caseStudy: {
+      context: {
+        vi: "Tạo một kênh bán cà phê và trà trực tuyến, đồng thời hỗ trợ nhân sự quản trị vận hành cửa hàng.",
+        en: "Create an online channel for selling coffee and tea while supporting the staff who manage store operations.",
+      },
+      approach: {
+        vi: "Xây dựng luồng mua hàng gồm giỏ hàng và thanh toán, kết hợp phân quyền Admin/Staff cho các nghiệp vụ quản trị.",
+        en: "Build a shopping flow with a cart and checkout, alongside Admin/Staff roles for store-management workflows.",
+      },
+      highlights: {
+        vi: ["Giỏ hàng và quy trình thanh toán", "Phân quyền Admin/Staff", "Tập trung tối ưu SEO và Core Web Vitals"],
+        en: ["Shopping cart and checkout flow", "Admin/Staff role management", "Focus on SEO and Core Web Vitals optimization"],
+      },
+    },
     tech: [
       "ASP.NET Core",
       "Entity Framework Core",
@@ -91,8 +131,25 @@ const PROJECTS = [
   },
   {
     title: "HTSALON – Đặt lịch cắt tóc",
+    titleEn: "HTSALON – Haircut Booking",
     description:
       "Hệ thống đặt lịch salon: quản lý dịch vụ, lịch hẹn, hoá đơn, phân quyền, biểu đồ báo cáo.",
+    descriptionEn:
+      "A salon booking system with service, appointment, invoice, and role management, plus reporting dashboards.",
+    caseStudy: {
+      context: {
+        vi: "Bài toán đặt lịch salon cần kết nối trải nghiệm đặt hẹn với các công việc quản lý dịch vụ, hóa đơn và nhân sự.",
+        en: "Salon booking needs to connect appointment scheduling with service, invoice, and staff management.",
+      },
+      approach: {
+        vi: "Phát triển ứng dụng web React và TypeScript, đưa lịch hẹn cùng các nghiệp vụ quản lý và báo cáo vào một hệ thống.",
+        en: "Develop a React and TypeScript web app that brings appointments, management workflows, and reporting into one system.",
+      },
+      highlights: {
+        vi: ["Quản lý dịch vụ, lịch hẹn và hóa đơn", "Phân quyền người dùng", "Biểu đồ báo cáo"],
+        en: ["Service, appointment, and invoice management", "User roles and permissions", "Reporting dashboards"],
+      },
+    },
     tech: [
       "React",
       "TypeScript",
@@ -111,6 +168,22 @@ const PROJECTS = [
     title: "Galaxy Playground – Three.js",
     description:
       "Hiệu ứng dải Ngân Hà tương tác: WebGL, tối ưu hiệu suất, tương thích di động, Sử dụng không gian 3D.",
+    descriptionEn:
+      "An interactive galaxy experience built with WebGL and 3D, optimized for performance and mobile devices.",
+    caseStudy: {
+      context: {
+        vi: "Tạo trải nghiệm trực quan về dải Ngân Hà, nơi người xem có thể khám phá không gian 3D ngay trên trình duyệt.",
+        en: "Create a visual galaxy experience that lets visitors explore a 3D scene in the browser.",
+      },
+      approach: {
+        vi: "Sử dụng Three.js và WebGL để dựng cảnh tương tác, đồng thời chú trọng hiệu năng và khả năng sử dụng trên thiết bị di động.",
+        en: "Use Three.js and WebGL to build an interactive scene, with attention to performance and mobile usability.",
+      },
+      highlights: {
+        vi: ["Không gian 3D tương tác", "Đồ họa WebGL với Three.js", "Tối ưu hiệu suất và tương thích di động"],
+        en: ["Interactive 3D scene", "WebGL graphics with Three.js", "Performance optimization and mobile support"],
+      },
+    },
     tech: ["Three.js", "HTML", "WebGL"],
     image: "/projects/Galaxy.png",
     links: {
@@ -122,6 +195,22 @@ const PROJECTS = [
     title: "Salon Booking App",
     description:
       "Ứng dụng Flutter đặt lịch salon với giao diện sạch, hiện đại. Hỗ trợ các chức năng đặt lịch và xác thực Firebase.",
+    descriptionEn:
+      "A clean, modern Flutter salon booking app with appointment scheduling and Firebase authentication.",
+    caseStudy: {
+      context: {
+        vi: "Đưa quy trình đặt lịch salon lên thiết bị di động với giao diện gọn gàng, dễ sử dụng.",
+        en: "Bring salon appointment booking to mobile devices through a clean, approachable interface.",
+      },
+      approach: {
+        vi: "Xây dựng ứng dụng bằng Flutter, kết hợp chức năng đặt lịch với xác thực Firebase.",
+        en: "Build the app with Flutter and combine appointment scheduling with Firebase authentication.",
+      },
+      highlights: {
+        vi: ["Ứng dụng đa nền tảng với Flutter", "Luồng đặt lịch salon", "Xác thực người dùng bằng Firebase"],
+        en: ["Cross-platform app built with Flutter", "Salon appointment booking flow", "Firebase user authentication"],
+      },
+    },
     tech: ["Flutter", "Firebase", "Dart"],
     image: "/projects/Salonbookingapp.png",
     links: {
@@ -133,6 +222,22 @@ const PROJECTS = [
     title: "EBook-Store App",
     description:
       "Ứng dụng mua sắm sách điện tử với trải nghiệm tối ưu, thanh toán Momo/VNPay và hệ thống quản lý đơn hàng.",
+    descriptionEn:
+      "An e-book shopping app with an optimized user experience, MoMo/VNPay payments, and order management.",
+    caseStudy: {
+      context: {
+        vi: "Xây dựng trải nghiệm mua sách điện tử đi cùng quy trình thanh toán và theo dõi đơn hàng.",
+        en: "Build an e-book shopping experience connected to payment and order-tracking workflows.",
+      },
+      approach: {
+        vi: "Tổ chức ứng dụng theo mô hình MVC, tích hợp API và các phương thức thanh toán MoMo/VNPay cùng nghiệp vụ quản lý đơn hàng.",
+        en: "Structure the app with MVC, integrate APIs and MoMo/VNPay payments, and support order-management workflows.",
+      },
+      highlights: {
+        vi: ["Thanh toán MoMo và VNPay", "Quản lý đơn hàng", "Tích hợp API và SQL Server"],
+        en: ["MoMo and VNPay payments", "Order management", "API and SQL Server integration"],
+      },
+    },
     tech: ["MVC", "SQL Server", "API", "Momo", "VNPay"],
     image: "/projects/Ebook.png",
     links: {
@@ -147,26 +252,131 @@ const fadeIn = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
-function TypingEffect({ text, speed = 30 }: { text: string; speed?: number }) {
-  const [displayed, setDisplayed] = React.useState("");
-  const [index, setIndex] = React.useState(0);
+type Locale = "vi" | "en";
 
-  React.useEffect(() => {
-    if (index < text.length) {
-      const timeout = setTimeout(() => {
-        setDisplayed((prev) => prev + text[index]);
-        setIndex((i) => i + 1);
-      }, speed);
-      return () => clearTimeout(timeout);
-    }
-  }, [index, text, speed]);
+const COPY = {
+  vi: {
+    navHome: "Trang chủ",
+    navProjects: "Dự án",
+    navExperience: "Kinh nghiệm",
+    navContact: "Liên hệ",
+    switchLanguage: "Switch language to English",
+    switchThemeToLight: "Chuyển sang giao diện sáng",
+    switchThemeToDark: "Chuyển sang giao diện tối",
+    openCv: "Mở CV của Hoàng Nhân dạng PDF",
+    available: "Đang mở nhận dự án thú vị",
+    introduction: "Tôi là",
+    contactMe: "Liên hệ",
+    viewCv: "Xem CV",
+    skills: "Kỹ năng tổng quan",
+    skillsSubtitle: "Bản đồ kỹ năng",
+    projects: "Dự án nổi bật",
+    projectsSubtitle: "Những sản phẩm mà tôi đã tham gia và học hỏi được nhiều nhất",
+    searchProjects: "Tìm theo tên dự án hoặc công nghệ...",
+    allTechnologies: "Tất cả công nghệ",
+    clearFilters: "Xóa bộ lọc",
+    showingProjects: (count: number) => `Hiển thị ${count}/${PROJECTS.length} dự án`,
+    noProjects: "Không tìm thấy dự án phù hợp. Hãy thử từ khóa hoặc bộ lọc khác.",
+    projectDetails: "Xem chi tiết",
+    caseStudy: "Case study",
+    contextLabel: "Bối cảnh",
+    approachLabel: "Cách tiếp cận",
+    highlightsLabel: "Trọng tâm triển khai",
+    close: "Đóng",
+    project: "Dự án",
+    demo: "Xem demo",
+    source: "Mã nguồn",
+    experience: "Kinh nghiệm",
+    experienceSubtitle: "Học hỏi liên tục & tạo ra giá trị",
+    experienceNow: "2024 – Hiện tại",
+    experienceNowDescription: "Xây dựng ứng dụng web thương mại điện tử, kiến trúc API, tối ưu hiệu năng & bảo mật.",
+    experiencePrevious: "2023 – 2024",
+    experiencePreviousDescription: "Thiết kế UI/UX, xây dựng component library dùng lại, SSR/ISR với Next.js.",
+    contactTitle: "Liên hệ hợp tác",
+    contactSubtitle: "Mình sẽ phản hồi trong 24h",
+    contactDescription: "Bạn có dự án thú vị, cần tư vấn kiến trúc hay tối ưu hệ thống? Hãy nhắn mình nhé.",
+    email: "Email",
+    chatName: "Trợ lý của Hoàng Nhân",
+    online: "Đang sẵn sàng",
+    closeChat: "Đóng cửa sổ chat",
+    startConversation: "Bắt đầu cuộc trò chuyện",
+    chatIntro: "Vui lòng cung cấp họ tên và email để lưu lại phiên chat và nhận phản hồi.",
+    fullName: "Họ và tên",
+    emailAddress: "Địa chỉ email",
+    creatingSession: "Đang tạo phiên...",
+    startChat: "Bắt đầu chat",
+    thinking: "Đang suy nghĩ...",
+    chatPlaceholder: "Đặt câu hỏi bất kỳ...",
+    chatInput: "Tin nhắn",
+    sendMessage: "Gửi tin nhắn",
+    savedSession: "Phiên chat được lưu để Hoàng Nhân có thể tiếp tục phản hồi.",
+    openChat: "Mở chat với trợ lý AI",
+    backToTop: "Về đầu trang",
+    allRightsReserved: "Bảo lưu mọi quyền.",
+  },
+  en: {
+    navHome: "Home",
+    navProjects: "Projects",
+    navExperience: "Experience",
+    navContact: "Contact",
+    switchLanguage: "Chuyển ngôn ngữ sang tiếng Việt",
+    switchThemeToLight: "Switch to light theme",
+    switchThemeToDark: "Switch to dark theme",
+    openCv: "Open Hoang Nhan's CV as a PDF",
+    available: "Open to exciting opportunities",
+    introduction: "I'm",
+    contactMe: "Get in touch",
+    viewCv: "View CV",
+    skills: "Skills overview",
+    skillsSubtitle: "Skill map",
+    projects: "Featured projects",
+    projectsSubtitle: "Selected projects I've built and learned from",
+    searchProjects: "Search projects or technologies...",
+    allTechnologies: "All technologies",
+    clearFilters: "Clear filters",
+    showingProjects: (count: number) => `Showing ${count} of ${PROJECTS.length} projects`,
+    noProjects: "No projects found. Try another search term or filter.",
+    projectDetails: "View details",
+    caseStudy: "Case study",
+    contextLabel: "Project context",
+    approachLabel: "Approach",
+    highlightsLabel: "Key focus",
+    close: "Close",
+    project: "Project",
+    demo: "Live demo",
+    source: "Source code",
+    experience: "Experience",
+    experienceSubtitle: "Continuous learning & creating value",
+    experienceNow: "2024 – Present",
+    experienceNowDescription: "Building e-commerce web apps and APIs, with a focus on performance and security.",
+    experiencePrevious: "2023 – 2024",
+    experiencePreviousDescription: "Designed UI/UX, built reusable component libraries, and worked with SSR/ISR in Next.js.",
+    contactTitle: "Let's work together",
+    contactSubtitle: "I usually respond within 24 hours",
+    contactDescription: "Have an interesting project, need architecture advice, or want to improve a system? Let's talk.",
+    email: "Email",
+    chatName: "Hoang Nhan's assistant",
+    online: "Online",
+    closeChat: "Close chat window",
+    startConversation: "Start a conversation",
+    chatIntro: "Share your name and email to save this chat and receive a reply.",
+    fullName: "Full name",
+    emailAddress: "Email address",
+    creatingSession: "Starting session...",
+    startChat: "Start chat",
+    thinking: "Thinking...",
+    chatPlaceholder: "Ask me anything...",
+    chatInput: "Message",
+    sendMessage: "Send message",
+    savedSession: "This chat is saved so Hoang Nhan can follow up with you.",
+    openChat: "Open AI assistant",
+    backToTop: "Back to top",
+    allRightsReserved: "All rights reserved.",
+  },
+} as const;
 
-  return (
-    <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-      {displayed}
-      <span className="ml-1 inline-block h-5 w-1 animate-pulse rounded-full bg-white align-middle" />
-    </p>
-  );
+function getProjectTitle(project: Project, locale: Locale) {
+  return locale === "en" && project.titleEn ? project.titleEn : project.title;
 }
 
 function SectionTitle({
@@ -191,7 +401,13 @@ function SectionTitle({
   );
 }
 
-function NavBar() {
+function NavBar({
+  locale,
+  onLocaleChange,
+}: {
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
+}) {
   const [dark, setDark] = React.useState(true);
 
   React.useEffect(() => {
@@ -216,7 +432,17 @@ function NavBar() {
           {PROFILE.name}
         </a>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={dark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
+            aria-label={COPY[locale].switchLanguage}
+            className="gap-1.5 rounded-full px-2.5 text-xs font-bold text-white"
+          >
+            <Languages className="h-4 w-4" />
+            {locale.toUpperCase()}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={dark ? COPY[locale].switchThemeToLight : COPY[locale].switchThemeToDark}>
             {dark ? <Sun className="h-5 w-5 text-white" /> : <Moon className="h-5 w-5 text-white" />}
           </Button>
           <a href={PROFILE.socials.github} target="_blank" rel="noreferrer">
@@ -240,8 +466,9 @@ function NavBar() {
   );
 }
 
-function Hero() {
+function Hero({ locale }: { locale: Locale }) {
   const [isDark, setIsDark] = React.useState(true);
+  const copy = COPY[locale];
 
   React.useEffect(() => {
     const root = window.document.documentElement;
@@ -276,11 +503,11 @@ function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200 shadow-lg shadow-sky-500/10">
               <Rocket className="h-3.5 w-3.5" />
-              Đang mở nhận dự án thú vị
+              {copy.available}
             </div>
 
             <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-6xl">
-              Tôi là <span className="text-sky-400">{PROFILE.name}</span>
+              {copy.introduction} <span className="text-sky-400">{PROFILE.name}</span>
             </h1>
 
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200">
@@ -288,17 +515,19 @@ function Hero() {
               {PROFILE.role}
             </div>
 
-            <TypingEffect text={PROFILE.summary} speed={24} />
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+              {locale === "vi" ? PROFILE.summary : PROFILE.summaryEn}
+            </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <a href={`mailto:${PROFILE.email}`}>
                 <Button className="h-11 min-w-[132px] justify-center gap-2 rounded-full bg-sky-500 px-5 py-3 text-white shadow-lg shadow-sky-500/30 hover:bg-sky-400">
-                  <Mail className="h-4 w-4" /> Liên hệ
+                  <Mail className="h-4 w-4" /> {copy.contactMe}
                 </Button>
               </a>
-              <a href={PROFILE.socials.cv} target="_blank" rel="noreferrer" aria-label="Mở CV của Hoàng Nhân dạng PDF">
+              <a href={PROFILE.socials.cv} target="_blank" rel="noreferrer" aria-label={copy.openCv}>
                 <Button variant="secondary" className="h-11 min-w-[132px] justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-white hover:bg-white/10">
-                  <FileText className="h-4 w-4" /> Xem CV
+                  <FileText className="h-4 w-4" /> {copy.viewCv}
                 </Button>
               </a>
             </div>
@@ -328,7 +557,7 @@ function Hero() {
                 }}
               />
               <CardContent className="relative p-6">
-                <SectionTitle icon={Cpu} title="Kỹ năng tổng quan" subtitle="Radar skill map" />
+                <SectionTitle icon={Cpu} title={copy.skills} subtitle={copy.skillsSubtitle} />
 
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -374,18 +603,65 @@ function Hero() {
   );
 }
 
-function Projects() {
-  const [active, setActive] = React.useState<number>(0);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+function Projects({ locale }: { locale: Locale }) {
+  const [search, setSearch] = React.useState("");
+  const [technology, setTechnology] = React.useState("");
+  const [selectedProject, setSelectedProject] = React.useState<Project | null>(null);
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const copy = COPY[locale];
+  const technologies = Array.from(new Set(PROJECTS.flatMap((project) => project.tech))).sort();
+  const filteredProjects = PROJECTS.filter((project) => {
+    const matchesSearch = normalizeVietnamese(
+      `${getProjectTitle(project, locale)} ${project.title} ${project.description} ${project.descriptionEn} ${project.tech.join(" ")}`,
+    ).includes(normalizeVietnamese(search.trim()));
+    return matchesSearch && (!technology || project.tech.includes(technology));
+  });
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowRight") {
-      setActive((prev) => (prev + 1) % PROJECTS.length);
+  const handleDialogKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setSelectedProject(null);
+      return;
     }
-    if (e.key === "ArrowLeft") {
-      setActive((prev) => (prev === 0 ? PROJECTS.length - 1 : prev - 1));
+
+    if (event.key !== "Tab" || !dialogRef.current) return;
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (!first || !last) {
+      event.preventDefault();
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   };
+
+  React.useEffect(() => {
+    if (!selectedProject) return;
+
+    const previouslyFocused = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.focus();
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedProject(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, [selectedProject]);
 
   return (
     <section id="projects" className="relative py-20">
@@ -400,115 +676,261 @@ function Projects() {
       />
 
       <div className="mx-auto max-w-6xl px-4">
-        <div className="relative z-10">
-          <SectionTitle
-            icon={Code2}
-            title="Dự án nổi bật"
-            subtitle="Những sản phẩm mà tôi đã tham gia và học hỏi được nhiều nhất"
-          />
+        <SectionTitle icon={Code2} title={copy.projects} subtitle={copy.projectsSubtitle} />
+
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <label className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={copy.searchProjects}
+              aria-label={copy.searchProjects}
+              className="w-full rounded-2xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-slate-400 focus:border-sky-400/60"
+            />
+          </label>
+          <label className="sm:w-64">
+            <span className="sr-only">{copy.allTechnologies}</span>
+            <select
+              value={technology}
+              onChange={(event) => setTechnology(event.target.value)}
+              className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none focus:border-sky-400/60"
+            >
+              <option value="">{copy.allTechnologies}</option>
+              {technologies.map((item) => (
+                <option key={item} value={item} className="bg-slate-900">
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="mt-3 flex min-h-7 flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+          <span aria-live="polite">{copy.showingProjects(filteredProjects.length)}</span>
+          {(search || technology) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setTechnology("");
+              }}
+              className="font-semibold text-sky-300 hover:text-sky-200"
+            >
+              {copy.clearFilters}
+            </button>
+          )}
         </div>
 
-        <div
-          ref={containerRef}
-          tabIndex={0}
-          onKeyDown={handleKeyDown}
-          className="relative z-0 mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3"
-        >
-          {PROJECTS.map((p, i) => {
-            const isActive = active === i;
-
-            return (
+        {filteredProjects.length > 0 ? (
+          <div className="mt-5 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {filteredProjects.map((project, index) => (
               <motion.div
-                key={i}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => containerRef.current?.focus()}
-                animate={{
-                  scale: isActive ? 1.02 : 1,
-                  y: isActive ? -6 : 0,
-                }}
-                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                className="cursor-pointer"
+                key={project.title}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: index * 0.04 }}
               >
-                <Card
-                  className={`project-card group h-full overflow-hidden rounded-[26px] border transition-all duration-500 ${
-                    isActive
-                      ? "border-sky-400/50 bg-slate-900/85 shadow-[0_20px_60px_rgba(56,189,248,0.18)]"
-                      : "border-white/10 bg-slate-900/60"
-                  }`}
-                >
-                  <div className="relative aspect-square overflow-hidden border-b border-white/10 bg-slate-950">
+                <Card className="project-card group h-full overflow-hidden rounded-[26px] border border-white/10 bg-slate-900/60 transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/40">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProject(project)}
+                    aria-label={`${copy.projectDetails}: ${getProjectTitle(project, locale)}`}
+                    className="relative block aspect-[16/10] w-full overflow-hidden border-b border-white/10 bg-slate-950 text-left"
+                  >
                     <img
-                      src={p.image}
-                      alt={p.title}
+                      src={project.image}
+                      alt={getProjectTitle(project, locale)}
                       className="project-image h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
-                    <div className="absolute left-4 top-4 rounded-full border border-white/15 bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-200 backdrop-blur-sm">
-                      #{i + 1}
-                    </div>
-                    <div className="absolute bottom-4 right-4 rounded-full border border-sky-300/25 bg-sky-500/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-sky-100 backdrop-blur-sm">
-                      Project
-                    </div>
-                  </div>
+                    <span className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-200 backdrop-blur-sm">
+                      #{PROJECTS.indexOf(project) + 1}
+                    </span>
+                    <span className="absolute bottom-4 right-4 rounded-full border border-sky-300/25 bg-sky-500/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-sky-100 backdrop-blur-sm">
+                      {copy.project}
+                    </span>
+                  </button>
 
                   <CardContent className="p-5">
-                    <h4 className="text-lg font-bold text-white">{p.title}</h4>
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">{p.description}</p>
+                    <h4 className="text-lg font-bold text-white">{getProjectTitle(project, locale)}</h4>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">
+                      {locale === "vi" ? project.description : project.descriptionEn}
+                    </p>
 
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {p.tech.map((t, idx) => (
-                        <Badge key={idx} variant="outline" className="rounded-full border-white/10 bg-white/5 text-[10px] font-medium tracking-wide text-slate-200">
-                          {t}
+                      {project.tech.map((item) => (
+                        <Badge key={item} variant="outline" className="rounded-full border-white/10 bg-white/5 text-[10px] font-medium tracking-wide text-slate-200">
+                          {item}
                         </Badge>
                       ))}
                     </div>
 
-                    <div className="mt-5 flex gap-2">
-                      <a href={p.links.demo} target="_blank" rel="noreferrer">
-                        <Button size="sm" className="gap-1 rounded-full bg-sky-500 text-white hover:bg-sky-400">
-                          Demo <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </a>
-                      <a href={p.links.source} target="_blank" rel="noreferrer">
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => setSelectedProject(project)}
+                        className="gap-1 rounded-full bg-sky-500 text-white hover:bg-sky-400"
+                      >
+                        {copy.projectDetails} <ArrowRight className="h-4 w-4" />
+                      </Button>
+                      <a href={project.links.demo} target="_blank" rel="noreferrer">
                         <Button size="sm" variant="secondary" className="rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10">
-                          Source
+                          {copy.demo}
                         </Button>
                       </a>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 flex justify-center gap-3">
-          {PROJECTS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              className={`transition-all duration-300 rounded-full ${
-                i === active ? "h-3 w-8 bg-sky-400" : "h-3 w-3 bg-slate-600 hover:bg-sky-300/80"
-              }`}
-            />
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-white/10 bg-slate-900/60 px-5 py-12 text-center text-sm text-slate-300">
+            {copy.noProjects}
+          </div>
+        )}
       </div>
+
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            key="project-dialog-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: "easeOut" }}
+            className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setSelectedProject(null);
+            }}
+          >
+            <motion.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="project-dialog-title"
+              tabIndex={-1}
+              onKeyDown={handleDialogKeyDown}
+              initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.97, y: prefersReducedMotion ? 0 : 8 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { type: "spring", stiffness: 320, damping: 28 }
+              }
+              className="case-study-dialog my-auto max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/15 bg-slate-900 shadow-2xl shadow-slate-950/60 outline-none"
+            >
+              <div className="relative aspect-[16/7] bg-slate-950">
+                <img src={selectedProject.image} alt={getProjectTitle(selectedProject, locale)} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/20" />
+                <span className="absolute bottom-4 left-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md sm:bottom-6 sm:left-7">
+                  <Code2 className="h-3.5 w-3.5 text-sky-300" />
+                  {copy.caseStudy}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedProject(null)}
+                  aria-label={copy.close}
+                  className="absolute right-3 top-3 rounded-full bg-slate-950/70 text-white hover:bg-slate-950"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="p-5 sm:p-7">
+                <h3 id="project-dialog-title" className="text-2xl font-bold text-white">
+                  {getProjectTitle(selectedProject, locale)}
+                </h3>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
+                  {locale === "vi" ? selectedProject.description : selectedProject.descriptionEn}
+                </p>
+
+                <div className="mt-7 grid gap-4 md:grid-cols-2">
+                  <section className="case-study-panel rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-white">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-400/10 text-violet-300">
+                        <Lightbulb className="h-4 w-4" />
+                      </span>
+                      {copy.contextLabel}
+                    </h4>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">
+                      {selectedProject.caseStudy.context[locale]}
+                    </p>
+                  </section>
+
+                  <section className="case-study-panel rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-white">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300">
+                        <Layers3 className="h-4 w-4" />
+                      </span>
+                      {copy.approachLabel}
+                    </h4>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">
+                      {selectedProject.caseStudy.approach[locale]}
+                    </p>
+                  </section>
+                </div>
+
+                <section className="mt-6">
+                  <h4 className="text-sm font-semibold text-white">{copy.highlightsLabel}</h4>
+                  <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {selectedProject.caseStudy.highlights[locale].map((highlight) => (
+                      <li key={highlight} className="flex items-start gap-2.5 text-sm leading-6 text-slate-300">
+                        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-300" />
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <div className="mt-6 border-t border-white/10 pt-5">
+                  <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    {locale === "vi" ? "Công nghệ sử dụng" : "Technologies"}
+                  </h4>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedProject.tech.map((item) => (
+                      <Badge key={item} variant="outline" className="rounded-full border-sky-400/20 bg-sky-500/10 text-sky-100">
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <a href={selectedProject.links.demo} target="_blank" rel="noreferrer">
+                    <Button className="gap-2 rounded-full bg-sky-500 text-white hover:bg-sky-400">
+                      {copy.demo} <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                  <a href={selectedProject.links.source} target="_blank" rel="noreferrer">
+                    <Button variant="secondary" className="gap-2 rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10">
+                      {copy.source} <Github className="h-4 w-4" />
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
 
-function Experience() {
+function Experience({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
   const items = [
     {
-      time: "2024 – Hiện tại",
+      time: copy.experienceNow,
       title: "Full-Stack Developer",
-      desc: "Xây dựng ứng dụng web thương mại điện tử, kiến trúc API, tối ưu hiệu năng & bảo mật.",
+      desc: copy.experienceNowDescription,
     },
     {
-      time: "2023 – 2024",
+      time: copy.experiencePrevious,
       title: "Frontend Engineer",
-      desc: "Thiết kế UI/UX, xây dựng component library dùng lại, SSR/ISR với Next.js.",
+      desc: copy.experiencePreviousDescription,
     },
   ];
 
@@ -527,8 +949,8 @@ function Experience() {
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle
           icon={Rocket}
-          title="Kinh nghiệm"
-          subtitle="Học hỏi liên tục & tạo ra giá trị"
+          title={copy.experience}
+          subtitle={copy.experienceSubtitle}
         />
 
         <div className="relative pl-12">
@@ -555,7 +977,8 @@ function Experience() {
   );
 }
 
-function Contact() {
+function Contact({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
   return (
     <section id="contact" className="py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
@@ -572,15 +995,15 @@ function Contact() {
           <CardContent className="p-6 md:p-8">
             <div className="grid items-center gap-6 md:grid-cols-2">
               <div>
-                <SectionTitle icon={Mail} title="Liên hệ hợp tác" subtitle="Mình sẽ phản hồi trong 24h" />
+                <SectionTitle icon={Mail} title={copy.contactTitle} subtitle={copy.contactSubtitle} />
                 <p className="text-sm leading-7 text-slate-300">
-                  Bạn có dự án thú vị, cần tư vấn kiến trúc hay tối ưu hệ thống? Hãy nhắn mình nhé.
+                  {copy.contactDescription}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-3">
                   <a href={`mailto:${PROFILE.email}`}>
                     <Button className="gap-2 rounded-full bg-sky-500 text-white hover:bg-sky-400">
-                      <Mail className="h-4 w-4" /> Email
+                      <Mail className="h-4 w-4" /> {copy.email}
                     </Button>
                   </a>
                   <a href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer">
@@ -615,11 +1038,11 @@ function Contact() {
   );
 }
 
-function Footer() {
+function Footer({ locale }: { locale: Locale }) {
   return (
     <footer className="py-10 text-center text-sm text-slate-300">
       <div className="mx-auto max-w-6xl px-4">
-        © {new Date().getFullYear()} {PROFILE.name}. All rights reserved.
+        © {new Date().getFullYear()} {PROFILE.name}. {COPY[locale].allRightsReserved}
       </div>
     </footer>
   );
@@ -631,11 +1054,18 @@ type ChatMessage = {
   content: string;
 };
 
-const QUICK_QUESTIONS = [
-  "Hoàng Nhân chuyên về công nghệ gì?",
-  "Bạn có nhận dự án freelance không?",
-  "Cho mình xem các dự án nổi bật",
-];
+const QUICK_QUESTIONS = {
+  vi: [
+    "Hoàng Nhân chuyên về công nghệ gì?",
+    "Bạn có nhận dự án freelance không?",
+    "Cho mình xem các dự án nổi bật",
+  ],
+  en: [
+    "What technologies does Hoang Nhan use?",
+    "Are you available for freelance projects?",
+    "Show me your featured projects",
+  ],
+};
 
 function normalizeVietnamese(text: string) {
   return text
@@ -645,8 +1075,45 @@ function normalizeVietnamese(text: string) {
     .replace(/đ/g, "d");
 }
 
-function getLocalChatReply(message: string) {
+function getLocalChatReply(message: string, locale: Locale) {
   const normalized = normalizeVietnamese(message.trim());
+
+  if (locale === "en") {
+    if (/^(hello|hi|hey)\b/.test(normalized)) {
+      return "Hi! I'm Hoang Nhan's assistant. Would you like to learn about the technologies I use, my projects, or discuss a new project?";
+    }
+    if (normalized.includes("technology") || normalized.includes("technologies") || normalized.includes("skills") || normalized.includes("tech stack")) {
+      return `I work with ${TECH_STACK.join(", ")}. My main focus is React/Next.js, Node.js, ASP.NET Core, and SQL Server, with a strong interest in performance, DevOps, and security.`;
+    }
+    if (normalized.includes("react") || normalized.includes("next.js") || normalized.includes("nextjs")) {
+      return "I use React and Next.js to build clear, responsive interfaces and reusable components, with a focus on maintainability and SSR/ISR.";
+    }
+    if (normalized.includes("node") || normalized.includes(".net") || normalized.includes("asp.net") || normalized.includes("backend") || normalized.includes("api")) {
+      return "For backend development, I build APIs with Node.js/Express or ASP.NET Core, using SQL Server and Entity Framework Core. I also focus on authorization, validation, performance, and API security.";
+    }
+    if (normalized.includes("experience") || normalized.includes("work")) {
+      return "I'm a Full-Stack Developer with experience building e-commerce websites, booking systems, APIs, and admin interfaces—from requirements analysis through delivery and optimization.";
+    }
+    if (normalized.includes("project") || normalized.includes("portfolio") || normalized.includes("built")) {
+      return `My featured projects include ${PROJECTS.map((project) => getProjectTitle(project, locale)).join(", ")}. Explore the Projects section for details, technologies, demos, and source code.`;
+    }
+    if (normalized.includes("price") || normalized.includes("cost") || normalized.includes("quote")) {
+      return "I don't have a fixed rate because each project has a different scope. Share your requirements, key features, and timeline, and I'll provide a suitable quote.";
+    }
+    if (normalized.includes("freelance") || normalized.includes("available") || normalized.includes("collaborat")) {
+      return "I'm open to suitable projects. Send me your goals, key features, and timeline, and I'll get back to you here.";
+    }
+    if (normalized.includes("cv") || normalized.includes("resume")) {
+      return "You can open my CV using the View CV button in the introduction section. Leave a message in the chat if you need any additional information.";
+    }
+    if (normalized.includes("location") || normalized.includes("where")) {
+      return `I'm based in ${PROFILE.location}. I'm also happy to discuss work online through chat or the contact links on this portfolio.`;
+    }
+    if (normalized.includes("contact") || normalized.includes("email") || normalized.includes("facebook") || normalized.includes("github") || normalized.includes("linkedin")) {
+      return `You can reach me at ${PROFILE.email}, or find me on GitHub, LinkedIn, or Facebook. If you leave a question here, I can follow up in this chat.`;
+    }
+    return "I don't have a reliable answer for that yet. Try rephrasing your question or leave a message for Hoang Nhan, and he'll follow up in this chat.";
+  }
 
   if (/^(xin chao|chao|hello|hi|hey)\b/.test(normalized)) {
     return "Chào bạn, mình là Trợ lý của Hoàng Nhân. Bạn muốn tìm hiểu về công nghệ mình sử dụng, các dự án đã làm hay trao đổi một dự án mới?";
@@ -695,7 +1162,8 @@ function getLocalChatReply(message: string) {
   return "Mình chưa có thông tin chính xác cho câu hỏi này. Bạn có thể viết rõ hơn một chút hoặc gửi câu hỏi cho Hoàng Nhân; mình sẽ xem và phản hồi trực tiếp trong chat.";
 }
 
-function ChatWidget() {
+function ChatWidget({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
   const [isOpen, setIsOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [visitorName, setVisitorName] = React.useState("");
@@ -704,6 +1172,14 @@ function ChatWidget() {
   const [questionSession, setQuestionSession] = React.useState<{ id: string; token: string } | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [showBackToTop, setShowBackToTop] = React.useState(false);
+
+  React.useEffect(() => {
+    const updateVisibility = () => setShowBackToTop(window.scrollY > 500);
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateVisibility);
+  }, []);
 
   React.useEffect(() => {
     const saved = window.localStorage.getItem("portfolio-chat-session");
@@ -741,7 +1217,7 @@ function ChatWidget() {
   const startSession = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!visitorName.trim() || !visitorEmail.includes("@") || isLoading) {
-      setQuestionStatus("Vui lòng nhập họ tên và email hợp lệ.");
+      setQuestionStatus(locale === "vi" ? "Vui lòng nhập họ tên và email hợp lệ." : "Enter your name and a valid email address.");
       return;
     }
 
@@ -754,12 +1230,14 @@ function ChatWidget() {
         body: JSON.stringify({ name: visitorName, email: visitorEmail }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Không thể bắt đầu phiên chat.");
+      if (!response.ok) {
+        throw new Error(locale === "en" ? "Unable to start the chat. Please try again later." : data.error || "Không thể bắt đầu phiên chat.");
+      }
       setQuestionSession({ id: data.id, token: data.token });
       setMessages([]);
       window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ id: data.id, token: data.token, name: visitorName.trim(), email: visitorEmail.trim() }));
     } catch (error) {
-      setQuestionStatus(error instanceof Error ? error.message : "Không thể gửi câu hỏi lúc này.");
+      setQuestionStatus(error instanceof Error ? error.message : locale === "vi" ? "Không thể gửi câu hỏi lúc này." : "Unable to start the chat right now.");
     } finally {
       setIsLoading(false);
     }
@@ -785,14 +1263,17 @@ function ChatWidget() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, userMessage].map(({ role, content: text }) => ({ role, content: text })) }),
+        body: JSON.stringify({
+          lang: locale,
+          messages: [...messages, userMessage].map(({ role, content: text }) => ({ role, content: text })),
+        }),
       });
 
-      const assistantContent = response.ok ? (await response.json()).message : getLocalChatReply(content);
+      const assistantContent = response.ok ? (await response.json()).message : getLocalChatReply(content, locale);
       setMessages((current) => [...current, { id: Date.now() + 1, role: "assistant", content: assistantContent }]);
       await saveMessage("assistant", assistantContent);
     } catch {
-      const assistantContent = getLocalChatReply(content);
+      const assistantContent = getLocalChatReply(content, locale);
       setMessages((current) => [
         ...current,
         { id: Date.now() + 1, role: "assistant", content: assistantContent },
@@ -811,14 +1292,14 @@ function ChatWidget() {
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-sky-400/15 p-2 text-sky-300"><Bot className="h-5 w-5" /></div>
               <div>
-                <p className="chat-title text-sm font-bold text-white">Trợ lý của Hoàng Nhân</p>
-                <p className="flex items-center gap-1 text-[11px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Đang sẵn sàng</p>
+                <p className="chat-title text-sm font-bold text-white">{copy.chatName}</p>
+                <p className="flex items-center gap-1 text-[11px] text-emerald-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {copy.online}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Đóng cửa sổ chat"><X className="chat-close h-4 w-4 text-slate-300" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label={copy.closeChat}><X className="chat-close h-4 w-4 text-slate-300" /></Button>
           </div>
 
-          {!questionSession ? <form onSubmit={startSession} className="space-y-3 p-5"><div><p className="text-sm font-semibold text-white">Bắt đầu cuộc trò chuyện</p><p className="mt-1 text-xs leading-5 text-slate-400">Vui lòng cung cấp họ tên và email để lưu lại phiên chat và nhận phản hồi.</p></div><input required value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder="Họ và tên" className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><input required type="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} placeholder="Địa chỉ email" className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><Button type="submit" disabled={isLoading} className="w-full rounded-xl bg-sky-500 text-white">{isLoading ? "Đang tạo phiên..." : "Bắt đầu chat"}</Button>{questionStatus && <p className="text-xs text-rose-300">{questionStatus}</p>}</form> : <>
+          {!questionSession ? <form onSubmit={startSession} className="space-y-3 p-5"><div><p className="text-sm font-semibold text-white">{copy.startConversation}</p><p className="mt-1 text-xs leading-5 text-slate-400">{copy.chatIntro}</p></div><input required value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder={copy.fullName} className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><input required type="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} placeholder={copy.emailAddress} className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><Button type="submit" disabled={isLoading} className="w-full rounded-xl bg-sky-500 text-white">{isLoading ? copy.creatingSession : copy.startChat}</Button>{questionStatus && <p className="text-xs text-rose-300">{questionStatus}</p>}</form> : <>
           <div className="chat-messages flex max-h-[min(55vh,420px)] min-h-[260px] flex-col gap-3 overflow-y-auto p-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -829,39 +1310,68 @@ function ChatWidget() {
                 {message.role === "user" && <div className="mb-0.5 rounded-lg bg-white/10 p-1.5 text-slate-300"><User className="h-3.5 w-3.5" /></div>}
               </div>
             ))}
-            {isLoading && <div className="flex items-center gap-2 text-xs text-slate-400"><Bot className="h-4 w-4 text-sky-300" /> Đang suy nghĩ...</div>}
+            {isLoading && <div className="flex items-center gap-2 text-xs text-slate-400"><Bot className="h-4 w-4 text-sky-300" /> {copy.thinking}</div>}
           </div>
 
-          {messages.length === 0 && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS.map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
+          {messages.length === 0 && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS[locale].map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
 
           <form onSubmit={sendMessage} className="flex items-center gap-2 border-t border-white/10 p-3">
-            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Đặt câu hỏi bất kỳ..." aria-label="Tin nhắn" className="chat-input min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/60" />
-            <Button type="submit" size="icon" disabled={!input.trim() || isLoading} aria-label="Gửi tin nhắn" className="shrink-0 rounded-xl bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-40"><Send className="h-4 w-4" /></Button>
+            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={copy.chatPlaceholder} aria-label={copy.chatInput} className="chat-input min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/60" />
+            <Button type="submit" size="icon" disabled={!input.trim() || isLoading} aria-label={copy.sendMessage} className="shrink-0 rounded-xl bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-40"><Send className="h-4 w-4" /></Button>
           </form>
-          <p className="border-t border-white/10 px-4 py-3 text-center text-[11px] text-slate-500">Phiên chat được lưu để Hoàng Nhân có thể tiếp tục phản hồi.</p>
+          <p className="border-t border-white/10 px-4 py-3 text-center text-[11px] text-slate-500">{copy.savedSession}</p>
           </>}
         </Card>
       )}
-      <Button onClick={() => setIsOpen((open) => !open)} aria-label={isOpen ? "Đóng chat" : "Mở chat với trợ lý AI"} className="chat-launcher h-14 w-14 rounded-full bg-sky-500 p-0 text-white shadow-xl shadow-sky-500/35 hover:scale-105 hover:bg-sky-400">
+      <Button onClick={() => setIsOpen((open) => !open)} aria-label={isOpen ? copy.closeChat : copy.openChat} className="chat-launcher h-14 w-14 rounded-full bg-sky-500 p-0 text-white shadow-xl shadow-sky-500/35 hover:scale-105 hover:bg-sky-400">
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </Button>
+      {showBackToTop && (
+        <Button
+          type="button"
+          onClick={() => {
+            const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+            window.scrollTo({ top: 0, behavior });
+          }}
+          aria-label={copy.backToTop}
+          title={copy.backToTop}
+          className="h-12 w-12 rounded-full border border-white/15 bg-slate-900/80 p-0 text-white shadow-xl shadow-slate-950/30 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-sky-500"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </Button>
+      )}
     </div>
   );
 }
 
 export default function Portfolio() {
+  const [locale, setLocale] = React.useState<Locale>("vi");
+
+  React.useEffect(() => {
+    const savedLocale = window.localStorage.getItem("portfolio-language");
+    const initialLocale: Locale = savedLocale === "en" ? "en" : "vi";
+    setLocale(initialLocale);
+    document.documentElement.lang = initialLocale;
+  }, []);
+
+  const changeLocale = (nextLocale: Locale) => {
+    setLocale(nextLocale);
+    window.localStorage.setItem("portfolio-language", nextLocale);
+    document.documentElement.lang = nextLocale;
+  };
+
   return (
     <div className="min-h-dvh bg-slate-950 text-white selection:bg-sky-500/30 selection:text-white">
       <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.18)_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
-      <NavBar />
+      <NavBar locale={locale} onLocaleChange={changeLocale} />
       <main>
-        <Hero />
-        <Projects />
-        <Experience />
-        <Contact />
+        <Hero locale={locale} />
+        <Projects locale={locale} />
+        <Experience locale={locale} />
+        <Contact locale={locale} />
       </main>
-      <ChatWidget />
-      <Footer />
+      <ChatWidget locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }
