@@ -445,17 +445,17 @@ function NavBar({
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={dark ? COPY[locale].switchThemeToLight : COPY[locale].switchThemeToDark}>
             {dark ? <Sun className="h-5 w-5 text-white" /> : <Moon className="h-5 w-5 text-white" />}
           </Button>
-          <a href={PROFILE.socials.github} target="_blank" rel="noreferrer">
+          <a className="hidden md:block" href={PROFILE.socials.github} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="GitHub">
               <Github className="h-5 w-5 text-white" />
             </Button>
           </a>
-          <a href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer">
+          <a className="hidden md:block" href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="LinkedIn">
               <Linkedin className="h-5 w-5 text-white" />
             </Button>
           </a>
-          <a href={PROFILE.socials.facebook} target="_blank" rel="noreferrer">
+          <a className="hidden md:block" href={PROFILE.socials.facebook} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="Facebook">
               <Facebook className="h-5 w-5 text-white" />
             </Button>
@@ -498,15 +498,15 @@ function Hero({ locale }: { locale: Locale }) {
           variants={fadeIn}
           initial="hidden"
           animate="show"
-          className="grid items-center gap-10 md:grid-cols-[1.1fr_0.9fr]"
+          className="grid min-w-0 grid-cols-1 items-center gap-10 md:grid-cols-[1.1fr_0.9fr]"
         >
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200 shadow-lg shadow-sky-500/10">
               <Rocket className="h-3.5 w-3.5" />
               {copy.available}
             </div>
 
-            <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-6xl">
+            <h1 className="mt-5 break-words text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-6xl">
               {copy.introduction} <span className="text-sky-400">{PROFILE.name}</span>
             </h1>
 

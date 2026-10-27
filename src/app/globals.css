@@ -28,10 +28,12 @@ html.dark {
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100vh;
+  overflow-x: clip;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
