@@ -66,6 +66,10 @@ html:not(.dark) [class~="text-white"] {
   color: hsl(var(--foreground));
 }
 
+html:not(.dark) .back-to-top-button {
+  color: #fff;
+}
+
 html:not(.dark) [class~="text-slate-300"] {
   color: #475569;
 }
@@ -89,6 +93,21 @@ html:not(.dark) .tech-stack-badge {
   color: #075985;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.technology-filter option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+html:not(.dark) .technology-filter {
+  background-color: #fff;
+  color: #0f172a;
+}
+
+html:not(.dark) .technology-filter option {
+  background-color: #fff;
+  color: #0f172a;
 }
 
 html:not(.dark) .chat-panel {
@@ -181,6 +200,12 @@ a {
 
 .project-image {
   filter: saturate(0.92);
+}
+
+.project-type-badge {
+  border-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(2, 6, 23, 0.76);
+  color: #fff;
 }
 
 .project-card:hover .project-image {

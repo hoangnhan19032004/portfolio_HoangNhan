@@ -695,11 +695,11 @@ function Projects({ locale }: { locale: Locale }) {
             <select
               value={technology}
               onChange={(event) => setTechnology(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none focus:border-sky-400/60"
+              className="technology-filter w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none focus:border-sky-400/60"
             >
               <option value="">{copy.allTechnologies}</option>
               {technologies.map((item) => (
-                <option key={item} value={item} className="bg-slate-900">
+                <option key={item} value={item}>
                   {item}
                 </option>
               ))}
@@ -747,7 +747,7 @@ function Projects({ locale }: { locale: Locale }) {
                     <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-200 backdrop-blur-sm">
                       #{PROJECTS.indexOf(project) + 1}
                     </span>
-                    <span className="absolute bottom-4 right-4 rounded-full border border-sky-300/25 bg-sky-500/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-sky-100 backdrop-blur-sm">
+                    <span className="project-type-badge absolute bottom-4 right-4 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] backdrop-blur-sm">
                       {copy.project}
                     </span>
                   </button>
@@ -1335,7 +1335,7 @@ function ChatWidget({ locale }: { locale: Locale }) {
           }}
           aria-label={copy.backToTop}
           title={copy.backToTop}
-          className="h-12 w-12 rounded-full border border-white/15 bg-slate-900/80 p-0 text-white shadow-xl shadow-slate-950/30 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-sky-500"
+          className="back-to-top-button h-12 w-12 rounded-full border border-white/15 bg-slate-900/80 p-0 text-white shadow-xl shadow-slate-950/30 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-sky-500"
         >
           <ArrowUp className="h-5 w-5" />
         </Button>
