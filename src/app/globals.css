@@ -70,6 +70,11 @@ html:not(.dark) .back-to-top-button {
   color: #fff;
 }
 
+html:not(.dark) .project-case-study-page .case-study-image-label,
+html:not(.dark) .project-case-study-page .case-study-primary-button {
+  color: #fff;
+}
+
 html:not(.dark) [class~="text-slate-300"] {
   color: #475569;
 }
