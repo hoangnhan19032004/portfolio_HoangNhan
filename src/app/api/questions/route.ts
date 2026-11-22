@@ -14,9 +14,12 @@ function escapeHtml(value: string) {
 
 function storageError(error: unknown) {
   const code = error instanceof Error ? error.message : "UNKNOWN";
-  if (code === "SUPABASE_CONFIG_MISSING") return "Thiếu SUPABASE_URL hoặc SUPABASE_SERVICE_ROLE_KEY trên hosting.";
+  if (code === "SUPABASE_CONFIG_MISSING") return "Thiếu SUPABASE_URL và SUPABASE_SECRET_KEY (hoặc SUPABASE_SERVICE_ROLE_KEY) trên hosting.";
+  if (code === "SUPABASE_SECRET_KEY_INVALID") return "Không dùng SUPABASE_PUBLISHABLE_KEY cho kết nối máy chủ; cần secret key hoặc service_role key.";
   if (code === "SUPABASE_URL_INVALID") return "SUPABASE_URL không hợp lệ. Chỉ nhập URL gốc dạng https://project-ref.supabase.co.";
   if (code === "SUPABASE_CONNECTION_FAILED") return "Không thể kết nối Supabase từ hosting. Kiểm tra Project URL và trạng thái project.";
+  if (code === "SUPABASE_HTTP_401") return "Supabase từ chối khóa API (401). Hãy dùng secret key của đúng project với SUPABASE_URL.";
+  if (code === "SUPABASE_HTTP_403") return "Supabase từ chối quyền truy cập (403). Kiểm tra quyền Data API của bảng visitor_questions.";
   if (code.startsWith("SUPABASE_HTTP_")) return `Supabase từ chối yêu cầu (${code.replace("SUPABASE_HTTP_", "HTTP ")}).`;
   return "Không thể kết nối Supabase từ hosting.";
 }

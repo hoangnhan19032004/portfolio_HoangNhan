@@ -24,8 +24,9 @@ type SupabaseQuestion = Omit<VisitorQuestion, "visitor_token"> & {
 
 function getSupabaseConfig() {
   const configuredUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!configuredUrl || !key) throw new Error("SUPABASE_CONFIG_MISSING");
+  if (key.trim().startsWith("sb_publishable_")) throw new Error("SUPABASE_SECRET_KEY_INVALID");
 
   let url: URL;
   try {
@@ -36,20 +37,29 @@ function getSupabaseConfig() {
 
   if (!url.hostname.endsWith(".supabase.co")) throw new Error("SUPABASE_URL_INVALID");
   url.pathname = "";
-  return { url: url.toString().replace(/\/$/, ""), key: key.trim() };
+  const normalizedKey = key.trim();
+  return {
+    url: url.toString().replace(/\/$/, ""),
+    key: normalizedKey,
+    isSecretKey: normalizedKey.startsWith("sb_secret_"),
+  };
 }
 
 async function supabaseRequest(path: string, init: RequestInit = {}) {
-  const { url, key } = getSupabaseConfig();
+  const { url, key, isSecretKey } = getSupabaseConfig();
   try {
+    const headers = new Headers(init.headers);
+    headers.set("apikey", key);
+    headers.set("Content-Type", "application/json");
+    if (isSecretKey) {
+      headers.delete("Authorization");
+    } else {
+      headers.set("Authorization", `Bearer ${key}`);
+    }
+
     return await fetch(`${url}/rest/v1/visitor_questions${path}`, {
       ...init,
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-        ...(init.headers || {}),
-      },
+      headers,
       cache: "no-store",
     });
   } catch {
