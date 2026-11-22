@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Code2,
   Cpu,
+  Database,
   ExternalLink,
   Facebook,
   FileText,
@@ -29,6 +30,18 @@ import {
   User,
   X,
 } from "lucide-react";
+import {
+  siCss,
+  siDotnet,
+  siExpress,
+  siHtml5,
+  siJavascript,
+  siNextdotjs,
+  siNodedotjs,
+  siReact,
+  siTailwindcss,
+  siTypescript,
+} from "simple-icons";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -80,6 +93,20 @@ const TECH_STACK = [
   "EF Core",
 ];
 
+const TECHNOLOGIES = [
+  { name: "React", category: { vi: "Giao diện", en: "Frontend" }, icon: siReact, color: "#61DAFB" },
+  { name: "Next.js", category: { vi: "Framework", en: "Framework" }, icon: siNextdotjs, color: "#F8FAFC" },
+  { name: "TypeScript", category: { vi: "Ngôn ngữ", en: "Language" }, icon: siTypescript, color: "#3178C6" },
+  { name: "JavaScript", category: { vi: "Ngôn ngữ", en: "Language" }, icon: siJavascript, color: "#F7DF1E" },
+  { name: "Tailwind CSS", category: { vi: "Tạo kiểu", en: "Styling" }, icon: siTailwindcss, color: "#06B6D4" },
+  { name: "HTML5", category: { vi: "Giao diện", en: "Frontend" }, icon: siHtml5, color: "#E34F26" },
+  { name: "CSS", category: { vi: "Giao diện", en: "Frontend" }, icon: siCss, color: "#663399" },
+  { name: "Node.js", category: { vi: "Backend", en: "Backend" }, icon: siNodedotjs, color: "#5FA04E" },
+  { name: "Express", category: { vi: "Backend", en: "Backend" }, icon: siExpress, color: "#F8FAFC" },
+  { name: "ASP.NET Core", category: { vi: "Backend", en: "Backend" }, icon: siDotnet, color: "#512BD4" },
+  { name: "SQL Server", category: { vi: "Cơ sở dữ liệu", en: "Database" }, icon: null, color: "#CC2927" },
+];
+
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -108,6 +135,8 @@ const COPY = {
     skillsSubtitle: "Bản đồ kỹ năng",
     projects: "Dự án nổi bật",
     projectsSubtitle: "Những sản phẩm mà tôi đã tham gia và học hỏi được nhiều nhất",
+    technologies: "Công nghệ sử dụng",
+    technologiesSubtitle: "Các công nghệ mình ứng dụng để xây dựng giao diện và sản phẩm web.",
     searchProjects: "Tìm theo tên dự án hoặc công nghệ...",
     allTechnologies: "Tất cả công nghệ",
     clearFilters: "Xóa bộ lọc",
@@ -176,6 +205,8 @@ const COPY = {
     skillsSubtitle: "Skill map",
     projects: "Featured projects",
     projectsSubtitle: "Selected projects I've built and learned from",
+    technologies: "Technology stack",
+    technologiesSubtitle: "The technologies I use to build interfaces and web products.",
     searchProjects: "Search projects or technologies...",
     allTechnologies: "All technologies",
     clearFilters: "Clear filters",
@@ -823,6 +854,54 @@ function Experience({ locale }: { locale: Locale }) {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function Technologies({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+
+  return (
+    <section id="technologies" className="technologies-section relative py-16 md:py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <SectionTitle
+          icon={Layers3}
+          title={copy.technologies}
+          subtitle={copy.technologiesSubtitle}
+        />
+
+        <ul className="technology-grid">
+          {TECHNOLOGIES.map((technology, index) => (
+            <li className="technology-card" key={technology.name}>
+              <div className="technology-card-content">
+                <span className="technology-icon" style={{ color: technology.color }}>
+                  {technology.icon ? (
+                    <svg
+                      aria-hidden="true"
+                      className="technology-logo"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d={technology.icon.path} fill="currentColor" />
+                    </svg>
+                  ) : (
+                    <Database aria-hidden="true" className="technology-logo" />
+                  )}
+                </span>
+                <span className="technology-card-copy">
+                  <span className="technology-name">{technology.name}</span>
+                  <span className="technology-category">
+                    {locale === "vi" ? technology.category.vi : technology.category.en}
+                  </span>
+                </span>
+              </div>
+              <span aria-hidden="true" className="technology-index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
@@ -1551,6 +1630,7 @@ export default function Portfolio() {
             <Hero locale={locale} />
             <Projects locale={locale} />
             <Experience locale={locale} />
+            <Technologies locale={locale} />
             <Contact locale={locale} />
           </main>
           <ChatWidget locale={locale} />

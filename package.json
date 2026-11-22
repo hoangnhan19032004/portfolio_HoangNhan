@@ -20,6 +20,7 @@
     "react-typed": "^2.0.12",
     "recharts": "^2.12.7",
     "resend": "^6.26.0",
+    "simple-icons": "^16.38.1",
     "tailwindcss": "^3.4.10"
   },
   "devDependencies": {
