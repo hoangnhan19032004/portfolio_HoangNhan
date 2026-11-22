@@ -96,6 +96,11 @@ const COPY = {
     switchThemeToDark: "Chuyển sang giao diện tối",
     openCv: "Mở CV của Hoàng Nhân dạng PDF",
     available: "Đang mở nhận dự án thú vị",
+    entryEyebrow: "FRONTEND DEVELOPER · CREATIVE CODING",
+    entryTitle: "Khám phá thế giới số của",
+    entryDescription: "Một không gian tương tác về giao diện, chuyển động và những trải nghiệm web mình yêu thích.",
+    entryButton: "Khám phá portfolio",
+    entryHint: "Tự động vào sau 15 giây · nhấn để vào ngay",
     introduction: "Tôi là",
     contactMe: "Liên hệ",
     viewCv: "Xem CV",
@@ -159,6 +164,11 @@ const COPY = {
     switchThemeToDark: "Switch to dark theme",
     openCv: "Open Hoang Nhan's CV as a PDF",
     available: "Open to exciting opportunities",
+    entryEyebrow: "FRONTEND DEVELOPER · CREATIVE CODING",
+    entryTitle: "Explore the digital world of",
+    entryDescription: "An interactive space for interfaces, motion, and the web experiences I love to build.",
+    entryButton: "Enter portfolio",
+    entryHint: "Entering automatically in 15 seconds · click to enter now",
     introduction: "I'm",
     contactMe: "Get in touch",
     viewCv: "View CV",
@@ -263,7 +273,7 @@ function NavBar({
   return (
     <div className="site-navbar fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-slate-950/50 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <a href="/" className="text-lg font-semibold tracking-[0.2em] text-white uppercase">
+        <a href="#home" className="text-lg font-semibold tracking-[0.2em] text-white uppercase">
           {PROFILE.name}
         </a>
         <div className="flex items-center gap-2">
@@ -1364,8 +1374,146 @@ function ChatWidget({ locale }: { locale: Locale }) {
   );
 }
 
+function PortfolioEntry({
+  locale,
+  onLocaleChange,
+  onEnter,
+}: {
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
+  onEnter: () => void;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const enterTriggered = React.useRef(false);
+  const enterOnce = React.useCallback(() => {
+    if (enterTriggered.current) return;
+    enterTriggered.current = true;
+    onEnter();
+  }, [onEnter]);
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(enterOnce, 15_000);
+    return () => window.clearTimeout(timeoutId);
+  }, [enterOnce]);
+
+  const handleScenePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion || event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 18;
+    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * -14;
+    event.currentTarget.style.setProperty("--entry-tilt-x", `${x}deg`);
+    event.currentTarget.style.setProperty("--entry-tilt-y", `${y}deg`);
+  };
+
+  const resetScenePointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.style.setProperty("--entry-tilt-x", "0deg");
+    event.currentTarget.style.setProperty("--entry-tilt-y", "0deg");
+  };
+
+  return (
+    <motion.main
+      className="entry-screen"
+      aria-labelledby="entry-title"
+      initial={false}
+      animate={{ opacity: 1 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.025 }}
+      transition={{ duration: prefersReducedMotion ? 0.12 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="entry-backdrop-grid" aria-hidden="true" />
+      <div className="entry-ambient entry-ambient-one" aria-hidden="true" />
+      <div className="entry-ambient entry-ambient-two" aria-hidden="true" />
+
+      <header className="entry-header">
+        <a href="/" className="entry-brand" aria-label="CodeWithHN home">
+          <span className="entry-brand-mark"><Code2 className="h-4 w-4" /></span>
+          <span>CODEWITHHN</span>
+        </a>
+        <div className="entry-header-meta">
+          <span className="entry-header-status"><i /> {locale === "vi" ? "PORTFOLIO TƯƠNG TÁC" : "INTERACTIVE PORTFOLIO"}</span>
+          <button
+            type="button"
+            className="entry-language-button"
+            onClick={() => onLocaleChange(locale === "vi" ? "en" : "vi")}
+            aria-label={COPY[locale].switchLanguage}
+          >
+            <Languages className="h-4 w-4" />
+            {locale.toUpperCase()}
+          </button>
+        </div>
+      </header>
+
+      <div className="entry-layout">
+        <section className="entry-copy">
+          <p className="entry-eyebrow"><span />{COPY[locale].entryEyebrow}</p>
+          <h1 id="entry-title">
+            {COPY[locale].entryTitle}
+            <span>CodeWithHN</span>
+          </h1>
+          <p className="entry-description">{COPY[locale].entryDescription}</p>
+          <div className="entry-stack" aria-label="Frontend technologies">
+            <span>React</span>
+            <span>Next.js</span>
+            <span>TypeScript</span>
+            <span>UI / UX</span>
+          </div>
+          <button type="button" className="entry-cta" onClick={enterOnce}>
+            <span>{COPY[locale].entryButton}</span>
+            <ArrowRight className="h-5 w-5" />
+          </button>
+          <p className="entry-hint">{COPY[locale].entryHint}</p>
+        </section>
+
+        <div
+          className="entry-visual"
+          aria-hidden="true"
+          onPointerMove={handleScenePointerMove}
+          onPointerLeave={resetScenePointer}
+        >
+          <div className="entry-visual-glow" />
+          <div className="entry-grid-plane" />
+          <div className="entry-orbit entry-orbit-one" />
+          <div className="entry-orbit entry-orbit-two" />
+          <div className="entry-cube-shadow" />
+          <div className="entry-cube-wrap">
+            <div className="entry-cube">
+              <div className="entry-cube-face entry-cube-front">
+                <Code2 />
+                <span>BUILD</span>
+              </div>
+              <div className="entry-cube-face entry-cube-back"><span>{"</>"}</span></div>
+              <div className="entry-cube-face entry-cube-right"><span>TS</span></div>
+              <div className="entry-cube-face entry-cube-left"><span>{"{ }"}</span></div>
+              <div className="entry-cube-face entry-cube-top"><span>UI</span></div>
+              <div className="entry-cube-face entry-cube-bottom"><span>UX</span></div>
+            </div>
+          </div>
+          <div className="entry-code-panel">
+            <div className="entry-code-panel-header">
+              <span><i /><i /><i /></span>
+              <span>experience.tsx</span>
+            </div>
+            <div className="entry-code-line"><span>01</span><code><b>const</b> craft = <em>&quot;with intent&quot;</em>;</code></div>
+            <div className="entry-code-line"><span>02</span><code><b>return</b> &lt;Experience /&gt;;</code></div>
+          </div>
+          <span className="entry-tech-tag entry-tech-react">React.js</span>
+          <span className="entry-tech-tag entry-tech-next">Next.js</span>
+          <span className="entry-tech-tag entry-tech-css">CSS · 3D</span>
+          <div className="entry-scene-index"><span>01</span><i /> INTERACTIVE EXPERIENCE</div>
+        </div>
+      </div>
+
+      <footer className="entry-footer">
+        <span>© {new Date().getFullYear()} CodeWithHN</span>
+        <span>{PROFILE.role}</span>
+      </footer>
+    </motion.main>
+  );
+}
+
 export default function Portfolio() {
   const [locale, setLocale] = React.useState<Locale>("vi");
+  const [hasEntered, setHasEntered] = React.useState(false);
+  const enterPortfolio = React.useCallback(() => setHasEntered(true), []);
 
   React.useEffect(() => {
     const savedLocale = window.localStorage.getItem("portfolio-language");
@@ -1381,17 +1529,34 @@ export default function Portfolio() {
   };
 
   return (
-    <div className="min-h-dvh bg-slate-950 text-white selection:bg-sky-500/30 selection:text-white">
-      <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.18)_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
-      <NavBar locale={locale} onLocaleChange={changeLocale} />
-      <main>
-        <Hero locale={locale} />
-        <Projects locale={locale} />
-        <Experience locale={locale} />
-        <Contact locale={locale} />
-      </main>
-      <ChatWidget locale={locale} />
-      <Footer locale={locale} />
-    </div>
+    <AnimatePresence mode="wait" initial={false}>
+      {!hasEntered ? (
+        <PortfolioEntry
+          key="portfolio-entry"
+          locale={locale}
+          onLocaleChange={changeLocale}
+          onEnter={enterPortfolio}
+        />
+      ) : (
+        <motion.div
+          key="portfolio-content"
+          className="min-h-dvh bg-slate-950 text-white selection:bg-sky-500/30 selection:text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35 }}
+        >
+          <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.18)_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
+          <NavBar locale={locale} onLocaleChange={changeLocale} />
+          <main>
+            <Hero locale={locale} />
+            <Projects locale={locale} />
+            <Experience locale={locale} />
+            <Contact locale={locale} />
+          </main>
+          <ChatWidget locale={locale} />
+          <Footer locale={locale} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
