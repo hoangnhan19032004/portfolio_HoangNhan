@@ -68,9 +68,21 @@ async function supabaseRequest(path: string, init: RequestInit = {}) {
   }
 }
 
+async function supabaseError(response: Response) {
+  let diagnostic = "";
+  try {
+    const body = await response.clone().json() as { code?: unknown; message?: unknown };
+    const code = typeof body.code === "string" ? body.code : "";
+    const message = typeof body.message === "string" ? body.message.replace(/\s+/g, " ").slice(0, 240) : "";
+    diagnostic = [code, message].filter(Boolean).join(": ");
+  } catch {
+  }
+  return `SUPABASE_HTTP_${response.status}${diagnostic ? `|${diagnostic}` : ""}`;
+}
+
 export async function listQuestions() {
   const response = await supabaseRequest("?select=*&order=created_at.desc");
-  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
+  if (!response.ok) throw new Error(await supabaseError(response));
   return (await response.json()) as SupabaseQuestion[];
 }
 
@@ -93,14 +105,14 @@ export async function startChat(input: Pick<VisitorQuestion, "visitor_name" | "v
     headers: { Prefer: "return=representation" },
     body: JSON.stringify(question),
   });
-  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
+  if (!response.ok) throw new Error(await supabaseError(response));
   const [savedQuestion] = (await response.json()) as SupabaseQuestion[];
   return savedQuestion;
 }
 
 export async function appendChatMessage(id: string, token: string, message: Omit<ChatMessage, "created_at">) {
   const response = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&visitor_token=eq.${encodeURIComponent(token)}&select=*`);
-  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
+  if (!response.ok) throw new Error(await supabaseError(response));
   const [question] = (await response.json()) as SupabaseQuestion[];
   if (!question || question.status === "closed") return null;
 
@@ -115,23 +127,68 @@ export async function appendChatMessage(id: string, token: string, message: Omit
       last_activity_at: createdAt,
     }),
   });
-  if (!updateResponse.ok) throw new Error(`SUPABASE_HTTP_${updateResponse.status}`);
+  if (!updateResponse.ok) throw new Error(await supabaseError(updateResponse));
   const [updated] = (await updateResponse.json()) as SupabaseQuestion[];
   return updated || null;
 }
 
+export async function appendInactivityWarning(id: string, token: string, lastUserAt: number, content: string) {
+  const currentResponse = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&visitor_token=eq.${encodeURIComponent(token)}&select=*`);
+  if (!currentResponse.ok) throw new Error(await supabaseError(currentResponse));
+  const [current] = (await currentResponse.json()) as SupabaseQuestion[];
+  if (!current || current.status === "closed") return null;
+
+  const messages = current.messages || [];
+  let lastUserIndex = -1;
+  for (let index = 0; index < messages.length; index += 1) {
+    if (messages[index].role === "user") lastUserIndex = index;
+  }
+  const lastUserMessage = messages[lastUserIndex];
+  if (
+    !lastUserMessage
+    || Date.parse(lastUserMessage.created_at) !== lastUserAt
+    || Date.now() - lastUserAt < 60_000
+  ) {
+    return { question: current, added: false };
+  }
+
+  const existingWarning = messages.slice(lastUserIndex + 1).some((message) => message.role === "system");
+  if (existingWarning) return { question: current, added: false };
+
+  const createdAt = new Date().toISOString();
+  const updatedMessages = [...messages, { role: "system" as const, content, created_at: createdAt }];
+  const response = await supabaseRequest(
+    `?id=eq.${encodeURIComponent(id)}&visitor_token=eq.${encodeURIComponent(token)}&status=neq.closed&last_activity_at=eq.${encodeURIComponent(current.last_activity_at)}`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ messages: updatedMessages, last_activity_at: createdAt }),
+    },
+  );
+  if (!response.ok) throw new Error(await supabaseError(response));
+  const [updated] = (await response.json()) as SupabaseQuestion[];
+  return { question: updated || current, added: Boolean(updated) };
+}
+
 export async function closeChat(id: string, token: string, warningAt: number) {
   const currentResponse = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&visitor_token=eq.${encodeURIComponent(token)}&select=*`);
-  if (!currentResponse.ok) throw new Error(`SUPABASE_HTTP_${currentResponse.status}`);
+  if (!currentResponse.ok) throw new Error(await supabaseError(currentResponse));
   const [current] = (await currentResponse.json()) as SupabaseQuestion[];
   if (!current) return null;
   if (current.status === "closed") return { question: current, closed: true };
 
   const messages = current.messages || [];
-  const latest = messages[messages.length - 1];
+  let lastUserIndex = -1;
+  let matchingWarningIndex = -1;
+  for (let index = 0; index < messages.length; index += 1) {
+    if (messages[index].role === "user") lastUserIndex = index;
+    if (messages[index].role === "system" && Date.parse(messages[index].created_at) === warningAt) {
+      matchingWarningIndex = index;
+    }
+  }
   if (
-    latest?.role !== "system"
-    || Date.parse(latest.created_at) !== warningAt
+    lastUserIndex < 0
+    || matchingWarningIndex <= lastUserIndex
     || Date.now() - warningAt < 180_000
   ) {
     return { question: current, closed: false };
@@ -145,14 +202,14 @@ export async function closeChat(id: string, token: string, warningAt: number) {
       body: JSON.stringify({ status: "closed" }),
     },
   );
-  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
+  if (!response.ok) throw new Error(await supabaseError(response));
   const [closedQuestion] = (await response.json()) as SupabaseQuestion[];
   return { question: closedQuestion || current, closed: Boolean(closedQuestion) };
 }
 
 export async function answerQuestion(id: string, answer: string) {
   const currentResponse = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&select=*`);
-  if (!currentResponse.ok) throw new Error(`SUPABASE_HTTP_${currentResponse.status}`);
+  if (!currentResponse.ok) throw new Error(await supabaseError(currentResponse));
   const [current] = (await currentResponse.json()) as SupabaseQuestion[];
   if (!current) return null;
   if (current.status === "closed") return null;
@@ -163,7 +220,7 @@ export async function answerQuestion(id: string, answer: string) {
     headers: { Prefer: "return=representation" },
     body: JSON.stringify({ answer, status: "answered", answered_at: answeredAt, last_activity_at: answeredAt, messages }),
   });
-  if (!response.ok) throw new Error(`SUPABASE_HTTP_${response.status}`);
+  if (!response.ok) throw new Error(await supabaseError(response));
   const [question] = (await response.json()) as SupabaseQuestion[];
   return question || null;
 }

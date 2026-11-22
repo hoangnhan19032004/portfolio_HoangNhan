@@ -896,6 +896,25 @@ type ChatMessage = {
   created_at: string;
 };
 
+function getInactivityTimestamps(messages: ChatMessage[]) {
+  let lastUserIndex = -1;
+  for (let index = 0; index < messages.length; index += 1) {
+    if (messages[index].role === "user") lastUserIndex = index;
+  }
+
+  if (lastUserIndex < 0) return { lastUserAt: null, warningAt: null };
+  const lastUserAt = Date.parse(messages[lastUserIndex].created_at);
+  let warningAt: number | null = null;
+  for (let index = lastUserIndex + 1; index < messages.length; index += 1) {
+    if (messages[index].role === "system") warningAt = Date.parse(messages[index].created_at);
+  }
+
+  return {
+    lastUserAt: Number.isFinite(lastUserAt) ? lastUserAt : null,
+    warningAt: warningAt !== null && Number.isFinite(warningAt) ? warningAt : null,
+  };
+}
+
 const QUICK_QUESTIONS = {
   vi: [
     "Hoàng Nhân chuyên về công nghệ gì?",
@@ -1005,6 +1024,7 @@ function getLocalChatReply(message: string, locale: Locale) {
 }
 
 function ChatWidget({ locale }: { locale: Locale }) {
+  const warningDelay = 60_000;
   const idleTimeout = 180_000;
   const copy = COPY[locale];
   const [isOpen, setIsOpen] = React.useState(false);
@@ -1015,6 +1035,7 @@ function ChatWidget({ locale }: { locale: Locale }) {
   const [questionSession, setQuestionSession] = React.useState<{ id: string; token: string } | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [lastUserAt, setLastUserAt] = React.useState<number | null>(null);
   const [warningAt, setWarningAt] = React.useState<number | null>(null);
   const [showBackToTop, setShowBackToTop] = React.useState(false);
   const closingSessionId = React.useRef<string | null>(null);
@@ -1034,7 +1055,9 @@ function ChatWidget({ locale }: { locale: Locale }) {
     setVisitorEmail("");
     setMessages([]);
     setInput("");
+    setLastUserAt(null);
     setWarningAt(null);
+    warningWriteKey.current = null;
     setIsLoading(false);
     setQuestionStatus(copy.chatEnded);
   }, [copy.chatEnded]);
@@ -1094,25 +1117,11 @@ function ChatWidget({ locale }: { locale: Locale }) {
         if (Array.isArray(data.messages)) {
           const updatedMessages = data.messages.map((message: { role: ChatMessage["role"]; content: string; created_at: string }, index: number) => ({ ...message, id: `${message.created_at}-${index}` }));
           setMessages(updatedMessages);
-          const latestMessage = updatedMessages[updatedMessages.length - 1];
-          if (latestMessage?.role === "system") {
-            warningWriteKey.current = null;
-            setWarningAt(Date.parse(latestMessage.created_at));
-          } else {
-            setWarningAt(null);
-            const writeKey = `${questionSession.id}-${latestMessage?.created_at || "empty"}`;
-            if (!isLoading && latestMessage && warningWriteKey.current !== writeKey) {
-              warningWriteKey.current = writeKey;
-              try {
-                const warnedMessages = await saveMessage(questionSession, "system", copy.chatInactivityWarning);
-                const warningMessage = warnedMessages[warnedMessages.length - 1];
-                setMessages(warnedMessages);
-                setWarningAt(Date.parse(warningMessage.created_at));
-              } catch (error) {
-                setQuestionStatus(error instanceof Error ? error.message : copy.chatSaveError);
-                warningWriteKey.current = null;
-              }
-            }
+          if (!isLoading) {
+            const timing = getInactivityTimestamps(updatedMessages);
+            warningWriteKey.current = timing.warningAt === null ? warningWriteKey.current : null;
+            setWarningAt(timing.warningAt);
+            setLastUserAt(timing.warningAt === null ? timing.lastUserAt : null);
           }
         }
       } catch {
@@ -1122,7 +1131,44 @@ function ChatWidget({ locale }: { locale: Locale }) {
     checkReply();
     const interval = window.setInterval(checkReply, 3000);
     return () => window.clearInterval(interval);
-  }, [copy.chatInactivityWarning, copy.chatSaveError, isLoading, questionSession, resetSession, saveMessage]);
+  }, [isLoading, questionSession, resetSession]);
+
+  const activateInactivityWarning = React.useCallback(async (
+    session: { id: string; token: string },
+    expectedLastUserAt: number,
+  ) => {
+    const writeKey = `${session.id}-${expectedLastUserAt}`;
+    if (warningWriteKey.current === writeKey) return;
+    warningWriteKey.current = writeKey;
+    try {
+      const response = await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "warning",
+          ...session,
+          lastUserAt: expectedLastUserAt,
+          content: copy.chatInactivityWarning,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || copy.chatSaveError);
+      if (Array.isArray(data.messages)) {
+        const updatedMessages = data.messages.map((message: Omit<ChatMessage, "id">, index: number) => ({
+          ...message,
+          id: `${message.created_at}-${index}`,
+        }));
+        setMessages(updatedMessages);
+        const timing = getInactivityTimestamps(updatedMessages);
+        setWarningAt(timing.warningAt);
+        setLastUserAt(timing.warningAt === null ? timing.lastUserAt : null);
+      }
+      warningWriteKey.current = null;
+    } catch (error) {
+      setQuestionStatus(error instanceof Error ? error.message : copy.chatSaveError);
+      warningWriteKey.current = null;
+    }
+  }, [copy.chatInactivityWarning, copy.chatSaveError]);
 
   const endIdleSession = React.useCallback(async (
     session: { id: string; token: string },
@@ -1156,14 +1202,24 @@ function ChatWidget({ locale }: { locale: Locale }) {
   }, [copy.chatSaveError, resetSession]);
 
   React.useEffect(() => {
-    if (!questionSession || warningAt === null || isLoading) return;
-    const remaining = warningAt + idleTimeout - Date.now();
-    const timeout = window.setTimeout(
-      () => void endIdleSession(questionSession, warningAt),
-      Math.max(remaining, 0),
-    );
-    return () => window.clearTimeout(timeout);
-  }, [endIdleSession, idleTimeout, isLoading, questionSession, warningAt]);
+    if (!questionSession) return;
+    if (warningAt !== null) {
+      const remaining = warningAt + idleTimeout - Date.now();
+      const timeout = window.setTimeout(
+        () => void endIdleSession(questionSession, warningAt),
+        Math.max(remaining, 0),
+      );
+      return () => window.clearTimeout(timeout);
+    }
+    if (lastUserAt !== null) {
+      const remaining = lastUserAt + warningDelay - Date.now();
+      const timeout = window.setTimeout(
+        () => void activateInactivityWarning(questionSession, lastUserAt),
+        Math.max(remaining, 0),
+      );
+      return () => window.clearTimeout(timeout);
+    }
+  }, [activateInactivityWarning, endIdleSession, idleTimeout, lastUserAt, messages, questionSession, warningAt, warningDelay]);
 
   const startSession = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -1185,11 +1241,10 @@ function ChatWidget({ locale }: { locale: Locale }) {
         throw new Error(locale === "en" ? "Unable to start the chat. Please try again later." : data.error || "Không thể bắt đầu phiên chat.");
       }
       const session = { id: data.id as string, token: data.token as string };
-      const initialMessages = await saveMessage(session, "system", copy.chatInactivityWarning);
-      const latestMessage = initialMessages[initialMessages.length - 1];
       setQuestionSession(session);
-      setMessages(initialMessages);
-      setWarningAt(Date.parse(latestMessage.created_at));
+      setMessages([]);
+      setLastUserAt(null);
+      setWarningAt(null);
       window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ ...session, name: visitorName.trim(), email: visitorEmail.trim() }));
     } catch (error) {
       setQuestionStatus(error instanceof Error ? error.message : locale === "vi" ? "Không thể gửi câu hỏi lúc này." : "Unable to start the chat right now.");
@@ -1207,10 +1262,15 @@ function ChatWidget({ locale }: { locale: Locale }) {
     setMessages((current) => [...current, userMessage]);
     setInput("");
     setIsLoading(true);
+    setLastUserAt(null);
     setWarningAt(null);
 
     try {
-      await saveMessage(questionSession, "user", content);
+      const visitorMessages = await saveMessage(questionSession, "user", content);
+      setMessages(visitorMessages);
+      const visitorTiming = getInactivityTimestamps(visitorMessages);
+      setLastUserAt(visitorTiming.lastUserAt);
+      setWarningAt(visitorTiming.warningAt);
       let assistantContent: string;
       try {
         const response = await fetch("/api/chat", {
@@ -1228,10 +1288,6 @@ function ChatWidget({ locale }: { locale: Locale }) {
       }
       const updatedMessages = await saveMessage(questionSession, "assistant", assistantContent);
       setMessages(updatedMessages);
-      const warnedMessages = await saveMessage(questionSession, "system", copy.chatInactivityWarning);
-      const latestMessage = warnedMessages[warnedMessages.length - 1];
-      setMessages(warnedMessages);
-      setWarningAt(Date.parse(latestMessage.created_at));
       setQuestionStatus("");
     } catch (error) {
       setQuestionStatus(error instanceof Error ? error.message : copy.chatSaveError);

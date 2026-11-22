@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest, sendEmail } from "@/lib/server";
-import { appendChatMessage, answerQuestion, closeChat, listQuestions, startChat } from "@/lib/questions-store";
+import { appendChatMessage, appendInactivityWarning, answerQuestion, closeChat, listQuestions, startChat } from "@/lib/questions-store";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -12,15 +12,19 @@ function escapeHtml(value: string) {
   })[character] || character);
 }
 
-function storageError(error: unknown) {
-  const code = error instanceof Error ? error.message : "UNKNOWN";
+function storageError(error: unknown, includeDiagnostic = false) {
+  const errorMessage = error instanceof Error ? error.message : "UNKNOWN";
+  const [code, diagnostic] = errorMessage.split("|", 2);
   if (code === "SUPABASE_CONFIG_MISSING") return "Thiếu SUPABASE_URL và SUPABASE_SECRET_KEY (hoặc SUPABASE_SERVICE_ROLE_KEY) trên hosting.";
   if (code === "SUPABASE_SECRET_KEY_INVALID") return "Không dùng SUPABASE_PUBLISHABLE_KEY cho kết nối máy chủ; cần secret key hoặc service_role key.";
   if (code === "SUPABASE_URL_INVALID") return "SUPABASE_URL không hợp lệ. Chỉ nhập URL gốc dạng https://project-ref.supabase.co.";
   if (code === "SUPABASE_CONNECTION_FAILED") return "Không thể kết nối Supabase từ hosting. Kiểm tra Project URL và trạng thái project.";
   if (code === "SUPABASE_HTTP_401") return "Supabase từ chối khóa API (401). Hãy dùng secret key của đúng project với SUPABASE_URL.";
   if (code === "SUPABASE_HTTP_403") return "Supabase từ chối quyền truy cập (403). Kiểm tra quyền Data API của bảng visitor_questions.";
-  if (code.startsWith("SUPABASE_HTTP_")) return `Supabase từ chối yêu cầu (${code.replace("SUPABASE_HTTP_", "HTTP ")}).`;
+  if (code.startsWith("SUPABASE_HTTP_")) {
+    const message = `Supabase từ chối yêu cầu (${code.replace("SUPABASE_HTTP_", "HTTP ")}).`;
+    return includeDiagnostic && diagnostic ? `${message} Chi tiết: ${diagnostic}` : message;
+  }
   return "Không thể kết nối Supabase từ hosting.";
 }
 
@@ -50,6 +54,19 @@ export async function POST(request: Request) {
       const result = await closeChat(id, token, warningAt);
       if (!result) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
       return NextResponse.json({ closed: result.closed, status: result.question.status });
+    }
+
+    if (action === "warning") {
+      const id = String(body.id || "").trim();
+      const token = String(body.token || "").trim();
+      const lastUserAt = Number(body.lastUserAt);
+      const content = String(body.content || "").trim();
+      if (!id || !token || !Number.isSafeInteger(lastUserAt) || !content) {
+        return NextResponse.json({ error: "Dữ liệu phiên chat không hợp lệ." }, { status: 400 });
+      }
+      const result = await appendInactivityWarning(id, token, lastUserAt, content.slice(0, 4000));
+      if (!result) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
+      return NextResponse.json({ added: result.added, messages: result.question.messages || [] });
     }
 
     const name = String(body.name || "").trim();
@@ -97,7 +114,7 @@ export async function GET(request: Request) {
     console.error("Question inbox failed:", error);
     return NextResponse.json({
       questions: [],
-      warning: storageError(error),
+      warning: storageError(error, true),
     });
   }
 }
@@ -124,6 +141,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Đã lưu câu trả lời và gửi trực tiếp vào chat." });
   } catch (error) {
     console.error("Question reply failed:", error);
-    return NextResponse.json({ error: storageError(error) }, { status: 503 });
+    return NextResponse.json({ error: storageError(error, true) }, { status: 503 });
   }
 }
