@@ -25,7 +25,7 @@ export async function POST(request: Request) {
             role: "system",
             content: systemPrompt,
           },
-          ...messages,
+          ...messages.filter((message: { role?: string }) => message.role === "user" || message.role === "assistant"),
         ],
         temperature: 0.7,
       }),

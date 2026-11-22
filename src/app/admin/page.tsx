@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 type ChatMessage = {
-  role: "user" | "assistant" | "admin";
+  role: "user" | "assistant" | "admin" | "system";
   content: string;
   created_at: string;
 };
@@ -38,11 +38,11 @@ type Question = {
   question: string;
   answer: string | null;
   messages?: ChatMessage[];
-  status: "pending" | "answered";
+  status: "pending" | "answered" | "closed";
   created_at: string;
 };
 
-type Filter = "all" | "pending" | "answered";
+type Filter = "all" | "pending" | "answered" | "closed";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -70,7 +70,12 @@ function lastMessage(question: Question) {
 }
 
 function needsReply(question: Question) {
-  return question.status === "pending" || lastMessage(question)?.role === "user";
+  return question.status !== "closed" && (question.status === "pending" || lastMessage(question)?.role === "user");
+}
+
+function statusLabel(question: Question) {
+  if (question.status === "closed") return "Đã kết thúc";
+  return needsReply(question) ? "Cần trả lời" : "Đã trả lời";
 }
 
 function exportQuestions(questions: Question[]) {
@@ -83,7 +88,7 @@ function exportQuestions(questions: Question[]) {
     ...questions.map((question) => [
       question.visitor_name,
       question.visitor_email,
-      needsReply(question) ? "Cần phản hồi" : "Đã phản hồi",
+      statusLabel(question),
       lastMessage(question)?.content || question.question,
       formatDate(question.created_at),
     ].map(escapeCsv).join(",")),
@@ -169,13 +174,15 @@ export default function AdminPage() {
 
   const selected = questions.find((item) => item.id === selectedId) || null;
   const pendingCount = questions.filter(needsReply).length;
-  const answeredCount = questions.length - pendingCount;
+  const closedCount = questions.filter((question) => question.status === "closed").length;
+  const answeredCount = questions.filter((question) => question.status === "answered" && !needsReply(question)).length;
   const filteredQuestions = React.useMemo(() => {
     const query = search.trim().toLocaleLowerCase("vi");
     return questions.filter((question) => {
       const matchesFilter = filter === "all"
         || (filter === "pending" && needsReply(question))
-        || (filter === "answered" && !needsReply(question));
+        || (filter === "answered" && question.status === "answered" && !needsReply(question))
+        || (filter === "closed" && question.status === "closed");
       const searchableText = [
         question.visitor_name,
         question.visitor_email,
@@ -297,6 +304,7 @@ export default function AdminPage() {
     { id: "all", label: "Tất cả", count: questions.length },
     { id: "pending", label: "Cần phản hồi", count: pendingCount },
     { id: "answered", label: "Đã phản hồi", count: answeredCount },
+    { id: "closed", label: "Đã kết thúc", count: closedCount },
   ];
 
   return (
@@ -405,7 +413,7 @@ export default function AdminPage() {
               </button>
             </div>
 
-            <div className="mb-7 grid gap-4 sm:grid-cols-3">
+            <div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <article className="admin-stat admin-stat-total rounded-2xl p-5">
                 <div className="flex items-center justify-between">
                   <span className="admin-muted text-sm font-medium">Tổng phiên chat</span>
@@ -429,6 +437,14 @@ export default function AdminPage() {
                 </div>
                 <p className="mt-4 text-3xl font-black text-emerald-300">{answeredCount}</p>
                 <p className="admin-muted mt-1 text-xs">Các phiên đã được trả lời</p>
+              </article>
+              <article className="admin-stat admin-stat-closed rounded-2xl p-5">
+                <div className="flex items-center justify-between">
+                  <span className="admin-muted text-sm font-medium">Đã kết thúc</span>
+                  <div className="rounded-xl bg-slate-400/15 p-2.5 text-slate-300"><X className="h-4 w-4" /></div>
+                </div>
+                <p className="admin-heading mt-4 text-3xl font-black">{closedCount}</p>
+                <p className="admin-muted mt-1 text-xs">Các phiên đã hết thời gian</p>
               </article>
             </div>
 
@@ -509,8 +525,8 @@ export default function AdminPage() {
                               <p className="admin-list-question line-clamp-1 text-xs">
                                 {latest?.content || item.question}
                               </p>
-                              <span className={`admin-status shrink-0 rounded-full px-2 py-1 text-[9px] font-bold ${needsReply(item) ? "pending" : "answered"}`}>
-                                {needsReply(item) ? "Cần trả lời" : "Đã trả lời"}
+                              <span className={`admin-status shrink-0 rounded-full px-2 py-1 text-[9px] font-bold ${item.status === "closed" ? "closed" : needsReply(item) ? "pending" : "answered"}`}>
+                                {statusLabel(item)}
                               </span>
                             </div>
                           </div>
@@ -548,10 +564,10 @@ export default function AdminPage() {
                           </button>
                         </div>
                       </div>
-                      <span className={`admin-status flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-bold sm:px-3 sm:text-xs ${needsReply(selected) ? "pending" : "answered"}`}>
-                        {needsReply(selected) ? <Clock3 className="h-3.5 w-3.5" /> : <CheckCheck className="h-3.5 w-3.5" />}
-                        <span className="hidden sm:inline">{needsReply(selected) ? "Cần phản hồi" : "Đã phản hồi"}</span>
-                        <span className="sm:hidden">{needsReply(selected) ? "Chờ" : "Xong"}</span>
+                      <span className={`admin-status flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-bold sm:px-3 sm:text-xs ${selected.status === "closed" ? "closed" : needsReply(selected) ? "pending" : "answered"}`}>
+                        {selected.status === "closed" ? <X className="h-3.5 w-3.5" /> : needsReply(selected) ? <Clock3 className="h-3.5 w-3.5" /> : <CheckCheck className="h-3.5 w-3.5" />}
+                        <span className="hidden sm:inline">{statusLabel(selected)}</span>
+                        <span className="sm:hidden">{selected.status === "closed" ? "Kết thúc" : needsReply(selected) ? "Chờ" : "Xong"}</span>
                       </span>
                     </div>
 
@@ -565,6 +581,14 @@ export default function AdminPage() {
                       {(selected.messages || []).length === 0 ? (
                         <div className="admin-empty py-12 text-center text-sm">Chưa có tin nhắn trong phiên chat này.</div>
                       ) : (selected.messages || []).map((chatMessage, index) => {
+                        if (chatMessage.role === "system") {
+                          return (
+                            <p key={`${chatMessage.created_at}-${index}`} role="status" className="admin-system-notice mx-auto max-w-[88%] rounded-xl border border-sky-400/15 bg-sky-400/5 px-4 py-2 text-center text-xs leading-5 text-sky-200">
+                              {chatMessage.content}
+                              <span className="mt-1 block text-[10px] opacity-60">{formatTime(chatMessage.created_at)}</span>
+                            </p>
+                          );
+                        }
                         const isVisitor = chatMessage.role === "user";
                         const isAdmin = chatMessage.role === "admin";
                         return (
@@ -583,7 +607,11 @@ export default function AdminPage() {
                       })}
                     </div>
 
-                    <form onSubmit={reply} className="admin-reply-area border-t border-white/10 p-4 md:p-5">
+                    {selected.status === "closed" ? (
+                      <p className="admin-reply-area border-t border-white/10 px-5 py-4 text-center text-xs text-slate-400">
+                        Phiên chat đã kết thúc. Khách cần bắt đầu phiên mới để tiếp tục trò chuyện.
+                      </p>
+                    ) : <form onSubmit={reply} className="admin-reply-area border-t border-white/10 p-4 md:p-5">
                       <label htmlFor="admin-reply" className="admin-muted mb-2 block text-xs font-semibold">Trả lời khách hàng</label>
                       <div className="admin-composer flex items-end gap-2 rounded-2xl p-2">
                         <textarea
@@ -614,7 +642,7 @@ export default function AdminPage() {
                         <span>Enter để gửi · Shift + Enter để xuống dòng</span>
                         <span>{replyText.length}/4000</span>
                       </div>
-                    </form>
+                    </form>}
                   </div>
                 )}
               </section>

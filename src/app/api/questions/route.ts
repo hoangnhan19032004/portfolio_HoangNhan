@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest, sendEmail } from "@/lib/server";
-import { appendChatMessage, answerQuestion, listQuestions, startChat } from "@/lib/questions-store";
+import { appendChatMessage, answerQuestion, closeChat, listQuestions, startChat } from "@/lib/questions-store";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -33,11 +33,23 @@ export async function POST(request: Request) {
       const id = String(body.id || "").trim();
       const token = String(body.token || "").trim();
       const content = String(body.content || "").trim();
-      const role = body.role === "assistant" ? "assistant" : "user";
+      const role = body.role === "assistant" || body.role === "system" ? body.role : "user";
       if (!id || !token || !content) return NextResponse.json({ error: "Dữ liệu phiên chat không hợp lệ." }, { status: 400 });
       const session = await appendChatMessage(id, token, { role, content: content.slice(0, 4000) });
       if (!session) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
       return NextResponse.json({ messages: session.messages || [] });
+    }
+
+    if (action === "close") {
+      const id = String(body.id || "").trim();
+      const token = String(body.token || "").trim();
+      const warningAt = Number(body.warningAt);
+      if (!id || !token || !Number.isSafeInteger(warningAt)) {
+        return NextResponse.json({ error: "Dữ liệu phiên chat không hợp lệ." }, { status: 400 });
+      }
+      const result = await closeChat(id, token, warningAt);
+      if (!result) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
+      return NextResponse.json({ closed: result.closed, status: result.question.status });
     }
 
     const name = String(body.name || "").trim();

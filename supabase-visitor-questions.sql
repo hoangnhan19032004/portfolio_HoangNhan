@@ -7,10 +7,21 @@ create table if not exists public.visitor_questions (
   question text not null,
   answer text,
   messages jsonb not null default '[]'::jsonb,
-  status text not null default 'pending' check (status in ('pending', 'answered')),
+  status text not null default 'pending' check (status in ('pending', 'answered', 'closed')),
   created_at timestamptz not null default now(),
+  last_activity_at timestamptz not null default now(),
   answered_at timestamptz
 );
+
+alter table public.visitor_questions
+  drop constraint if exists visitor_questions_status_check;
+
+alter table public.visitor_questions
+  add constraint visitor_questions_status_check
+  check (status in ('pending', 'answered', 'closed'));
+
+alter table public.visitor_questions
+  add column if not exists last_activity_at timestamptz not null default now();
 
 alter table public.visitor_questions enable row level security;
 

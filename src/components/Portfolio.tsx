@@ -138,6 +138,9 @@ const COPY = {
     creatingSession: "Đang tạo phiên...",
     startChat: "Bắt đầu chat",
     thinking: "Đang suy nghĩ...",
+    chatInactivityWarning: "Thông báo: Nếu bạn không phản hồi, phiên chat sẽ tự động kết thúc sau 180 giây. Bộ đếm bắt đầu từ tin nhắn này.",
+    chatEnded: "Phiên chat đã kết thúc do không có phản hồi. Bạn có thể bắt đầu cuộc trò chuyện mới.",
+    chatSaveError: "Không thể đồng bộ tin nhắn. Vui lòng thử lại.",
     chatPlaceholder: "Đặt câu hỏi bất kỳ...",
     chatInput: "Tin nhắn",
     sendMessage: "Gửi tin nhắn",
@@ -198,6 +201,9 @@ const COPY = {
     creatingSession: "Starting session...",
     startChat: "Start chat",
     thinking: "Thinking...",
+    chatInactivityWarning: "Notice: If you don't reply, this chat will end automatically in 180 seconds. The timer starts with this message.",
+    chatEnded: "This chat ended after a period of inactivity. You can start a new conversation.",
+    chatSaveError: "Unable to sync your message. Please try again.",
     chatPlaceholder: "Ask me anything...",
     chatInput: "Message",
     sendMessage: "Send message",
@@ -885,8 +891,9 @@ function Footer({ locale }: { locale: Locale }) {
 
 type ChatMessage = {
   id: string | number;
-  role: "user" | "assistant" | "admin";
+  role: "user" | "assistant" | "admin" | "system";
   content: string;
+  created_at: string;
 };
 
 const QUICK_QUESTIONS = {
@@ -998,6 +1005,7 @@ function getLocalChatReply(message: string, locale: Locale) {
 }
 
 function ChatWidget({ locale }: { locale: Locale }) {
+  const idleTimeout = 180_000;
   const copy = COPY[locale];
   const [isOpen, setIsOpen] = React.useState(false);
   const [input, setInput] = React.useState("");
@@ -1007,7 +1015,47 @@ function ChatWidget({ locale }: { locale: Locale }) {
   const [questionSession, setQuestionSession] = React.useState<{ id: string; token: string } | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [warningAt, setWarningAt] = React.useState<number | null>(null);
   const [showBackToTop, setShowBackToTop] = React.useState(false);
+  const closingSessionId = React.useRef<string | null>(null);
+  const warningWriteKey = React.useRef<string | null>(null);
+
+  const resetSession = React.useCallback((sessionId: string) => {
+    try {
+      const saved = window.localStorage.getItem("portfolio-chat-session");
+      if (!saved || (JSON.parse(saved) as { id?: string }).id !== sessionId) return;
+    } catch {
+      window.localStorage.removeItem("portfolio-chat-session");
+    }
+
+    window.localStorage.removeItem("portfolio-chat-session");
+    setQuestionSession((current) => current?.id === sessionId ? null : current);
+    setVisitorName("");
+    setVisitorEmail("");
+    setMessages([]);
+    setInput("");
+    setWarningAt(null);
+    setIsLoading(false);
+    setQuestionStatus(copy.chatEnded);
+  }, [copy.chatEnded]);
+
+  const saveMessage = React.useCallback(async (
+    session: { id: string; token: string },
+    role: "user" | "assistant" | "system",
+    content: string,
+  ) => {
+    const response = await fetch("/api/questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "message", ...session, role, content }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || copy.chatSaveError);
+    return (data.messages as Omit<ChatMessage, "id">[]).map((message, index) => ({
+      ...message,
+      id: `${message.created_at}-${index}`,
+    }));
+  }, [copy.chatSaveError]);
 
   React.useEffect(() => {
     const updateVisibility = () => setShowBackToTop(window.scrollY > 500);
@@ -1039,7 +1087,34 @@ function ChatWidget({ locale }: { locale: Locale }) {
         const response = await fetch(`/api/questions?id=${encodeURIComponent(questionSession.id)}&token=${encodeURIComponent(questionSession.token)}`);
         if (!response.ok) return;
         const data = await response.json();
-        if (Array.isArray(data.messages)) setMessages(data.messages.map((message: { role: ChatMessage["role"]; content: string; created_at: string }, index: number) => ({ ...message, id: `${message.created_at}-${index}` })));
+        if (data.status === "closed") {
+          resetSession(questionSession.id);
+          return;
+        }
+        if (Array.isArray(data.messages)) {
+          const updatedMessages = data.messages.map((message: { role: ChatMessage["role"]; content: string; created_at: string }, index: number) => ({ ...message, id: `${message.created_at}-${index}` }));
+          setMessages(updatedMessages);
+          const latestMessage = updatedMessages[updatedMessages.length - 1];
+          if (latestMessage?.role === "system") {
+            warningWriteKey.current = null;
+            setWarningAt(Date.parse(latestMessage.created_at));
+          } else {
+            setWarningAt(null);
+            const writeKey = `${questionSession.id}-${latestMessage?.created_at || "empty"}`;
+            if (!isLoading && latestMessage && warningWriteKey.current !== writeKey) {
+              warningWriteKey.current = writeKey;
+              try {
+                const warnedMessages = await saveMessage(questionSession, "system", copy.chatInactivityWarning);
+                const warningMessage = warnedMessages[warnedMessages.length - 1];
+                setMessages(warnedMessages);
+                setWarningAt(Date.parse(warningMessage.created_at));
+              } catch (error) {
+                setQuestionStatus(error instanceof Error ? error.message : copy.chatSaveError);
+                warningWriteKey.current = null;
+              }
+            }
+          }
+        }
       } catch {
       }
     };
@@ -1047,7 +1122,48 @@ function ChatWidget({ locale }: { locale: Locale }) {
     checkReply();
     const interval = window.setInterval(checkReply, 3000);
     return () => window.clearInterval(interval);
-  }, [questionSession]);
+  }, [copy.chatInactivityWarning, copy.chatSaveError, isLoading, questionSession, resetSession, saveMessage]);
+
+  const endIdleSession = React.useCallback(async (
+    session: { id: string; token: string },
+    expectedWarningAt: number,
+  ) => {
+    if (closingSessionId.current === session.id) return;
+    closingSessionId.current = session.id;
+    try {
+      const response = await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "close",
+          ...session,
+          warningAt: expectedWarningAt,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || copy.chatSaveError);
+      if (data.closed) {
+        resetSession(session.id);
+      } else {
+        setWarningAt(null);
+      }
+    } catch {
+      resetSession(session.id);
+      setQuestionStatus(copy.chatSaveError);
+    } finally {
+      closingSessionId.current = null;
+    }
+  }, [copy.chatSaveError, resetSession]);
+
+  React.useEffect(() => {
+    if (!questionSession || warningAt === null || isLoading) return;
+    const remaining = warningAt + idleTimeout - Date.now();
+    const timeout = window.setTimeout(
+      () => void endIdleSession(questionSession, warningAt),
+      Math.max(remaining, 0),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [endIdleSession, idleTimeout, isLoading, questionSession, warningAt]);
 
   const startSession = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -1068,9 +1184,13 @@ function ChatWidget({ locale }: { locale: Locale }) {
       if (!response.ok) {
         throw new Error(locale === "en" ? "Unable to start the chat. Please try again later." : data.error || "Không thể bắt đầu phiên chat.");
       }
-      setQuestionSession({ id: data.id, token: data.token });
-      setMessages([]);
-      window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ id: data.id, token: data.token, name: visitorName.trim(), email: visitorEmail.trim() }));
+      const session = { id: data.id as string, token: data.token as string };
+      const initialMessages = await saveMessage(session, "system", copy.chatInactivityWarning);
+      const latestMessage = initialMessages[initialMessages.length - 1];
+      setQuestionSession(session);
+      setMessages(initialMessages);
+      setWarningAt(Date.parse(latestMessage.created_at));
+      window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ ...session, name: visitorName.trim(), email: visitorEmail.trim() }));
     } catch (error) {
       setQuestionStatus(error instanceof Error ? error.message : locale === "vi" ? "Không thể gửi câu hỏi lúc này." : "Unable to start the chat right now.");
     } finally {
@@ -1078,42 +1198,43 @@ function ChatWidget({ locale }: { locale: Locale }) {
     }
   };
 
-  const saveMessage = async (role: "user" | "assistant", content: string) => {
-    if (!questionSession) return;
-    await fetch("/api/questions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "message", ...questionSession, role, content }) });
-  };
-
   const sendMessage = async (event?: React.FormEvent, preset?: string) => {
     event?.preventDefault();
     const content = (preset ?? input).trim();
     if (!content || isLoading || !questionSession) return;
 
-    const userMessage: ChatMessage = { id: Date.now(), role: "user", content };
+    const userMessage: ChatMessage = { id: Date.now(), role: "user", content, created_at: new Date().toISOString() };
     setMessages((current) => [...current, userMessage]);
     setInput("");
     setIsLoading(true);
+    setWarningAt(null);
 
     try {
-      await saveMessage("user", content);
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lang: locale,
-          messages: [...messages, userMessage].map(({ role, content: text }) => ({ role, content: text })),
-        }),
-      });
-
-      const assistantContent = response.ok ? (await response.json()).message : getLocalChatReply(content, locale);
-      setMessages((current) => [...current, { id: Date.now() + 1, role: "assistant", content: assistantContent }]);
-      await saveMessage("assistant", assistantContent);
-    } catch {
-      const assistantContent = getLocalChatReply(content, locale);
-      setMessages((current) => [
-        ...current,
-        { id: Date.now() + 1, role: "assistant", content: assistantContent },
-      ]);
-      await saveMessage("assistant", assistantContent);
+      await saveMessage(questionSession, "user", content);
+      let assistantContent: string;
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lang: locale,
+            messages: [...messages.filter((message) => message.role !== "system"), userMessage]
+              .map(({ role, content: text }) => ({ role, content: text })),
+          }),
+        });
+        assistantContent = response.ok ? (await response.json()).message : getLocalChatReply(content, locale);
+      } catch {
+        assistantContent = getLocalChatReply(content, locale);
+      }
+      const updatedMessages = await saveMessage(questionSession, "assistant", assistantContent);
+      setMessages(updatedMessages);
+      const warnedMessages = await saveMessage(questionSession, "system", copy.chatInactivityWarning);
+      const latestMessage = warnedMessages[warnedMessages.length - 1];
+      setMessages(warnedMessages);
+      setWarningAt(Date.parse(latestMessage.created_at));
+      setQuestionStatus("");
+    } catch (error) {
+      setQuestionStatus(error instanceof Error ? error.message : copy.chatSaveError);
     } finally {
       setIsLoading(false);
     }
@@ -1137,18 +1258,26 @@ function ChatWidget({ locale }: { locale: Locale }) {
           {!questionSession ? <form onSubmit={startSession} className="space-y-3 p-5"><div><p className="text-sm font-semibold text-white">{copy.startConversation}</p><p className="mt-1 text-xs leading-5 text-slate-400">{copy.chatIntro}</p></div><input required value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder={copy.fullName} className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><input required type="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} placeholder={copy.emailAddress} className="chat-input w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-sky-400/60" /><Button type="submit" disabled={isLoading} className="w-full rounded-xl bg-sky-500 text-white">{isLoading ? copy.creatingSession : copy.startChat}</Button>{questionStatus && <p className="text-xs text-rose-300">{questionStatus}</p>}</form> : <>
           <div className="chat-messages flex max-h-[min(55vh,420px)] min-h-[260px] flex-col gap-3 overflow-y-auto p-4">
             {messages.map((message) => (
-              <div key={message.id} className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                {message.role === "assistant" && <div className="mb-0.5 rounded-lg bg-sky-400/15 p-1.5 text-sky-300"><Bot className="h-3.5 w-3.5" /></div>}
-                <div className={`chat-bubble max-w-[82%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${message.role === "user" ? "chat-user-bubble rounded-br-md bg-sky-500 text-white" : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"}`}>
+              message.role === "system" ? (
+                <p key={message.id} role="status" className="mx-auto max-w-[92%] rounded-xl border border-sky-300/15 bg-sky-300/5 px-3 py-2 text-center text-xs leading-5 text-sky-100/80">
                   {message.content}
+                </p>
+              ) : (
+                <div key={message.id} className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {message.role === "assistant" && <div className="mb-0.5 rounded-lg bg-sky-400/15 p-1.5 text-sky-300"><Bot className="h-3.5 w-3.5" /></div>}
+                  <div className={`chat-bubble max-w-[82%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${message.role === "user" ? "chat-user-bubble rounded-br-md bg-sky-500 text-white" : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"}`}>
+                    {message.content}
+                  </div>
+                  {message.role === "user" && <div className="mb-0.5 rounded-lg bg-white/10 p-1.5 text-slate-300"><User className="h-3.5 w-3.5" /></div>}
                 </div>
-                {message.role === "user" && <div className="mb-0.5 rounded-lg bg-white/10 p-1.5 text-slate-300"><User className="h-3.5 w-3.5" /></div>}
-              </div>
+              )
             ))}
             {isLoading && <div className="flex items-center gap-2 text-xs text-slate-400"><Bot className="h-4 w-4 text-sky-300" /> {copy.thinking}</div>}
           </div>
 
-          {messages.length === 0 && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS[locale].map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
+          {questionStatus && <p role="alert" className="px-4 pb-2 text-xs text-rose-300">{questionStatus}</p>}
+
+          {!messages.some((message) => message.role !== "system") && <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-3">{QUICK_QUESTIONS[locale].map((question) => <button key={question} type="button" onClick={() => sendMessage(undefined, question)} className="shrink-0 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1.5 text-left text-[11px] text-sky-200 transition hover:bg-sky-400/20">{question}</button>)}</div>}
 
           <form onSubmit={sendMessage} className="flex items-center gap-2 border-t border-white/10 p-3">
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={copy.chatPlaceholder} aria-label={copy.chatInput} className="chat-input min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/60" />

@@ -632,6 +632,7 @@ html:not(.dark) .nav-link:hover {
 .admin-stat-total::after { background: radial-gradient(circle, rgba(56, 189, 248, 0.22), transparent 70%); }
 .admin-stat-pending::after { background: radial-gradient(circle, rgba(251, 191, 36, 0.18), transparent 70%); }
 .admin-stat-answered::after { background: radial-gradient(circle, rgba(52, 211, 153, 0.18), transparent 70%); }
+.admin-stat-closed::after { background: radial-gradient(circle, rgba(148, 163, 184, 0.16), transparent 70%); }
 .admin-export-button { border: 1px solid rgba(56, 189, 248, 0.28); color: #bae6fd; background: rgba(56, 189, 248, 0.1); }
 .admin-export-button:hover:not(:disabled) { border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.18); }
 .admin-shortcut { border: 1px solid var(--admin-border); color: var(--admin-muted); background: rgba(255, 255, 255, 0.045); }
@@ -642,6 +643,7 @@ html:not(.dark) .nav-link:hover {
 .admin-avatar-dot { border-color: var(--admin-panel-strong); background: #fbbf24; }
 .admin-status.pending { color: #fcd34d; background: rgba(251, 191, 36, 0.12); }
 .admin-status.answered { color: #6ee7b7; background: rgba(52, 211, 153, 0.11); }
+.admin-status.closed { color: #cbd5e1; background: rgba(148, 163, 184, 0.12); }
 .admin-inbox-footer { color: var(--admin-muted); border-color: var(--admin-border); }
 .admin-detail-panel { background: rgba(7, 17, 31, 0.22); }
 .admin-contact-strip { background: rgba(255, 255, 255, 0.018); }
@@ -649,6 +651,7 @@ html:not(.dark) .nav-link:hover {
 .admin-chat-bubble.visitor { color: var(--admin-text); border: 1px solid var(--admin-border); background: rgba(255, 255, 255, 0.065); border-top-left-radius: 0.4rem; }
 .admin-chat-bubble.assistant { color: #cbd5e1; border: 1px solid rgba(56, 189, 248, 0.14); background: rgba(56, 189, 248, 0.075); border-top-right-radius: 0.4rem; }
 .admin-chat-bubble.admin { color: #ecfeff; border: 1px solid rgba(14, 165, 233, 0.3); background: linear-gradient(135deg, rgba(14, 165, 233, 0.88), rgba(2, 132, 199, 0.88)); border-top-right-radius: 0.4rem; }
+.admin-system-notice { color: #bae6fd; }
 .admin-reply-area { background: rgba(7, 17, 31, 0.32); }
 .admin-composer { border: 1px solid var(--admin-border); background: rgba(255, 255, 255, 0.045); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
 .admin-composer:focus-within { border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08); }
@@ -685,6 +688,7 @@ html:not(.dark) .admin-contact-strip, html:not(.dark) .admin-reply-area { backgr
 html:not(.dark) .admin-chat-bubble.visitor { color: #1e293b; background: #f1f5f9; }
 html:not(.dark) .admin-chat-bubble.assistant { color: #334155; background: rgba(14, 165, 233, 0.07); }
 html:not(.dark) .admin-chat-bubble.admin { color: #ffffff; }
+html:not(.dark) .admin-system-notice { color: #0369a1; }
 html:not(.dark) .admin-composer { background: rgba(15, 23, 42, 0.035); }
 html:not(.dark) .admin-composer-input { color: #0f172a; }
 html:not(.dark) .admin-empty-icon { background: rgba(15, 23, 42, 0.06); }
