@@ -216,7 +216,7 @@ export default function AdminPage() {
 
           if ("Notification" in window && Notification.permission === "granted") {
             newUserMessages.forEach(({ question, message }, index) => {
-              new Notification("Admin | Bạn có tin nhắn mới từ " + question.visitor_name, {
+              new Notification("Bạn có tin nhắn mới từ " + question.visitor_name, {
                 body: `${question.visitor_name}: ${message.content}`,
                 icon: "/favicon.ico",
                 tag: `${question.id}-${message.created_at}-${index}`,
