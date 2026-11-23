@@ -4,6 +4,7 @@ import React from "react";
 import {
   ArrowLeft,
   BarChart3,
+  Bell,
   Bot,
   Check,
   CheckCheck,
@@ -120,6 +121,10 @@ export default function AdminPage() {
   const [mobileDetailOpen, setMobileDetailOpen] = React.useState(false);
   const [lastSyncedAt, setLastSyncedAt] = React.useState<Date | null>(null);
   const [copiedEmail, setCopiedEmail] = React.useState(false);
+  const [unreadIds, setUnreadIds] = React.useState<Set<string>>(new Set());
+  const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission>("default");
+  const previousQuestionsRef = React.useRef<Question[]>([]);
+  const hasLoadedOnceRef = React.useRef(false);
 
   React.useEffect(() => {
     const savedTheme = window.localStorage.getItem("admin-theme");
@@ -127,6 +132,46 @@ export default function AdminPage() {
     setDark(useDark);
     document.documentElement.classList.toggle("dark", useDark);
   }, []);
+
+  React.useEffect(() => {
+    if ("Notification" in window) setNotificationPermission(Notification.permission);
+  }, []);
+
+  React.useEffect(() => {
+    document.title = unreadIds.size > 0 ? `(${unreadIds.size}) Tin nhắn mới | Admin` : "Admin Chat | CodeWithHN";
+  }, [unreadIds]);
+
+  const playNotificationSound = React.useCallback(() => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, context.currentTime);
+      oscillator.frequency.setValueAtTime(660, context.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.08, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.28);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.28);
+      oscillator.addEventListener("ended", () => void context.close());
+    } catch {
+    }
+  }, []);
+
+  const requestNotifications = async () => {
+    if (!("Notification" in window)) {
+      setMessage("Trình duyệt này không hỗ trợ thông báo hệ thống.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    setMessage(permission === "granted" ? "Đã bật thông báo trình duyệt cho admin." : "Bạn chưa cấp quyền thông báo.");
+  };
 
   const loadQuestions = React.useCallback(async (secret = password, silent = false) => {
     if (!silent) setLoading(true);
@@ -141,6 +186,45 @@ export default function AdminPage() {
         return;
       }
       const updatedQuestions: Question[] = data.questions || [];
+
+      if (hasLoadedOnceRef.current) {
+        const newUserMessages: Question[] = [];
+        updatedQuestions.forEach((question) => {
+          const latest = lastMessage(question);
+          const previous = previousQuestionsRef.current.find((item) => item.id === question.id);
+          const previousLatest = previous ? lastMessage(previous) : null;
+          if (
+            latest?.role === "user"
+            && latest.created_at
+            && latest.created_at !== previousLatest?.created_at
+          ) {
+            newUserMessages.push(question);
+          }
+        });
+
+        if (newUserMessages.length > 0) {
+          setUnreadIds((current) => {
+            const next = new Set(current);
+            newUserMessages.forEach((question) => next.add(question.id));
+            return next;
+          });
+          playNotificationSound();
+
+          if ("Notification" in window && Notification.permission === "granted") {
+            const newest = newUserMessages[0];
+            const latest = lastMessage(newest);
+            new Notification("Tin nhắn mới từ khách", {
+              body: `${newest.visitor_name}: ${latest?.content || "Người dùng vừa gửi tin nhắn mới"}`,
+              icon: "/favicon.ico",
+              tag: newest.id,
+            });
+          }
+        }
+      } else {
+        hasLoadedOnceRef.current = true;
+      }
+      previousQuestionsRef.current = updatedQuestions;
+
       setQuestions(updatedQuestions);
       setSelectedId((current) =>
         current && updatedQuestions.some((question) => question.id === current)
@@ -155,7 +239,7 @@ export default function AdminPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [password]);
+  }, [password, playNotificationSound]);
 
   React.useEffect(() => {
     if (!loggedIn) return;
@@ -364,7 +448,9 @@ export default function AdminPage() {
             <button className="admin-nav-active flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold">
               <Inbox className="h-4 w-4" />
               Inbox chat
-              <span className="ml-auto rounded-full bg-sky-400/15 px-2 py-0.5 text-[10px] text-sky-300">{pendingCount}</span>
+              <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] ${unreadIds.size > 0 ? "bg-rose-500 text-white" : "bg-sky-400/15 text-sky-300"}`}>
+                {unreadIds.size > 0 ? unreadIds.size : pendingCount}
+              </span>
             </button>
             <a href="/" className="admin-nav flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold">
               <BarChart3 className="h-4 w-4" /> Xem portfolio
@@ -411,6 +497,19 @@ export default function AdminPage() {
               >
                 <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
                 <span className="hidden text-xs font-semibold sm:inline">Làm mới</span>
+              </button>
+              <button
+                onClick={() => void requestNotifications()}
+                className="admin-icon-button relative rounded-xl p-2.5"
+                aria-label={notificationPermission === "granted" ? "Thông báo trình duyệt đang bật" : "Bật thông báo trình duyệt"}
+                title={notificationPermission === "granted" ? "Thông báo trình duyệt đang bật" : "Bật thông báo trình duyệt"}
+              >
+                <Bell className="h-4 w-4" />
+                {unreadIds.size > 0 && (
+                  <span className="admin-notification-badge absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-black text-white">
+                    {unreadIds.size > 9 ? "9+" : unreadIds.size}
+                  </span>
+                )}
               </button>
               <button onClick={toggleTheme} className="admin-icon-button rounded-xl p-2.5" aria-label={dark ? "Chuyển giao diện sáng" : "Chuyển giao diện tối"}>
                 {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -535,7 +634,15 @@ export default function AdminPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => { setSelectedId(item.id); setMobileDetailOpen(true); }}
+                        onClick={() => {
+                          setSelectedId(item.id);
+                          setMobileDetailOpen(true);
+                          setUnreadIds((current) => {
+                            const next = new Set(current);
+                            next.delete(item.id);
+                            return next;
+                          });
+                        }}
                         className={`admin-list-item w-full rounded-xl p-3.5 text-left ${active ? "selected" : ""}`}
                       >
                         <div className="flex gap-3">
