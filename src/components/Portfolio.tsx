@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
@@ -31,25 +33,35 @@ import {
   X,
 } from "lucide-react";
 import {
+  siBootstrap,
+  siC,
+  siCplusplus,
   siCss,
+  siDocker,
   siDotnet,
   siExpress,
+  siFigma,
+  siFirebase,
+  siGit,
+  siGithub,
   siHtml5,
   siJavascript,
+  siKotlin,
+  siLinux,
+  siMongodb,
+  siMysql,
+  siNetlify,
   siNextdotjs,
   siNodedotjs,
+  siNuxt,
+  siOpenjdk,
+  siPostman,
+  siPython,
   siReact,
+  siSupabase,
   siTailwindcss,
   siTypescript,
 } from "simple-icons";
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,28 +96,73 @@ const SKILLS = [
 ];
 
 const TECH_STACK = [
-  "TypeScript",
   "React / Next.js",
+  "Nuxt.js",
+  "TypeScript",
+  "JavaScript",
+  "Tailwind CSS",
+  "Bootstrap",
+  "C#",
+  "Java",
+  "Python",
+  "C",
+  "C++",
+  "Kotlin",
   "ASP.NET Core",
   "Node.js / Express",
-  "SQL Server",
-  "Tailwind CSS",
   "EF Core",
+  "SQL Server",
+  "MySQL",
+  "MongoDB",
+  "Firebase",
+  "Supabase",
+  "Linux",
+  "VS Code",
+  "Docker",
+  "Git",
+  "GitHub",
+  "Netlify",
+  "Postman",
+  "Figma",
+  "AI Agents",
 ];
 
 const TECHNOLOGIES = [
-  { name: "React", category: { vi: "Giao diện", en: "Frontend" }, icon: siReact, color: "#61DAFB" },
-  { name: "Next.js", category: { vi: "Framework", en: "Framework" }, icon: siNextdotjs, color: "#F8FAFC" },
-  { name: "TypeScript", category: { vi: "Ngôn ngữ", en: "Language" }, icon: siTypescript, color: "#3178C6" },
-  { name: "JavaScript", category: { vi: "Ngôn ngữ", en: "Language" }, icon: siJavascript, color: "#F7DF1E" },
-  { name: "Tailwind CSS", category: { vi: "Tạo kiểu", en: "Styling" }, icon: siTailwindcss, color: "#06B6D4" },
-  { name: "HTML5", category: { vi: "Giao diện", en: "Frontend" }, icon: siHtml5, color: "#E34F26" },
-  { name: "CSS", category: { vi: "Giao diện", en: "Frontend" }, icon: siCss, color: "#663399" },
-  { name: "Node.js", category: { vi: "Backend", en: "Backend" }, icon: siNodedotjs, color: "#5FA04E" },
-  { name: "Express", category: { vi: "Backend", en: "Backend" }, icon: siExpress, color: "#F8FAFC" },
-  { name: "ASP.NET Core", category: { vi: "Backend", en: "Backend" }, icon: siDotnet, color: "#512BD4" },
-  { name: "SQL Server", category: { vi: "Cơ sở dữ liệu", en: "Database" }, icon: null, color: "#CC2927" },
+  { name: "React", icon: siReact, color: "#61DAFB" },
+  { name: "Next.js", icon: siNextdotjs, color: "#F8FAFC" },
+  { name: "Nuxt.js", icon: siNuxt, color: "#00DC82" },
+  { name: "TypeScript", icon: siTypescript, color: "#3178C6" },
+  { name: "JavaScript", icon: siJavascript, color: "#F7DF1E" },
+  { name: "HTML5", icon: siHtml5, color: "#E34F26" },
+  { name: "CSS", icon: siCss, color: "#663399" },
+  { name: "Tailwind CSS", icon: siTailwindcss, color: "#06B6D4" },
+  { name: "Bootstrap", icon: siBootstrap, color: "#7952B3" },
+  { name: "Node.js", icon: siNodedotjs, color: "#5FA04E" },
+  { name: "Express", icon: siExpress, color: "#F8FAFC" },
+  { name: "ASP.NET Core", icon: siDotnet, color: "#512BD4" },
+  { name: "C#", icon: siDotnet, color: "#512BD4" },
+  { name: "Java", icon: siOpenjdk, color: "#F89820" },
+  { name: "Python", icon: siPython, color: "#3776AB" },
+  { name: "C", icon: siC, color: "#A8B9CC" },
+  { name: "C++", icon: siCplusplus, color: "#00599C" },
+  { name: "Kotlin", icon: siKotlin, color: "#7F52FF" },
+  { name: "SQL Server", icon: null, color: "#CC2927" },
+  { name: "MySQL", icon: siMysql, color: "#4479A1" },
+  { name: "MongoDB", icon: siMongodb, color: "#47A248" },
+  { name: "Firebase", icon: siFirebase, color: "#FFCA28" },
+  { name: "Supabase", icon: siSupabase, color: "#3FCF8E" },
+  { name: "Linux", icon: siLinux, color: "#FCC624" },
+  { name: "Docker", icon: siDocker, color: "#2496ED" },
+  { name: "VS Code", icon: null, color: "#007ACC" },
+  { name: "Git", icon: siGit, color: "#F05032" },
+  { name: "GitHub", icon: siGithub, color: "#F8FAFC" },
+  { name: "Netlify", icon: siNetlify, color: "#00C7B7" },
+  { name: "Postman", icon: siPostman, color: "#FF6C37" },
+  { name: "Figma", icon: siFigma, color: "#F24E1E" },
+  { name: "AI Agents", icon: null, color: "#A78BFA" },
 ];
+
+const TECHNOLOGY_ROW_SIZES = [9, 8, 8, 7];
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -132,11 +189,14 @@ const COPY = {
     contactMe: "Liên hệ",
     viewCv: "Xem CV",
     skills: "Kỹ năng tổng quan",
-    skillsSubtitle: "Bản đồ kỹ năng",
+    skillsSubtitle: "Ma trận năng lực cốt lõi",
+    skillsStatus: "ĐANG HOẠT ĐỘNG",
+    skillsIndex: "NĂNG LỰC",
+    skillsModules: "6 NĂNG LỰC CỐT LÕI",
     projects: "Dự án nổi bật",
     projectsSubtitle: "Những sản phẩm mà tôi đã tham gia và học hỏi được nhiều nhất",
     technologies: "Công nghệ sử dụng",
-    technologiesSubtitle: "Các công nghệ mình ứng dụng để xây dựng giao diện và sản phẩm web.",
+    technologiesSubtitle: "Các ngôn ngữ, framework và công cụ mình sử dụng để xây dựng sản phẩm.",
     searchProjects: "Tìm theo tên dự án hoặc công nghệ...",
     allTechnologies: "Tất cả công nghệ",
     clearFilters: "Xóa bộ lọc",
@@ -202,11 +262,14 @@ const COPY = {
     contactMe: "Get in touch",
     viewCv: "View CV",
     skills: "Skills overview",
-    skillsSubtitle: "Skill map",
+    skillsSubtitle: "Core competency matrix",
+    skillsStatus: "SYSTEM ONLINE",
+    skillsIndex: "SKILL INDEX",
+    skillsModules: "6 CORE SKILLS",
     projects: "Featured projects",
     projectsSubtitle: "Selected projects I've built and learned from",
     technologies: "Technology stack",
-    technologiesSubtitle: "The technologies I use to build interfaces and web products.",
+    technologiesSubtitle: "Languages, frameworks, and tools I use to build products.",
     searchProjects: "Search projects or technologies...",
     allTechnologies: "All technologies",
     clearFilters: "Clear filters",
@@ -265,12 +328,12 @@ function SectionTitle({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-6 flex items-center gap-3">
-      <div className="section-icon rounded-2xl border border-white/10 bg-white/5 p-2 shadow-lg shadow-sky-500/10">
+    <div className="section-title mb-6 flex items-center gap-3">
+      <div className="section-title-icon section-icon rounded-2xl border border-white/10 bg-white/5 p-2 shadow-lg shadow-sky-500/10">
         <Icon className="h-5 w-5 text-sky-300" />
       </div>
-      <div>
-        <h3 className="text-xl font-semibold tracking-tight text-white">{title}</h3>
+      <div className="section-title-copy">
+        <h2 className="text-xl font-semibold tracking-tight text-white">{title}</h2>
         {subtitle && <p className="-mt-0.5 text-sm text-slate-300">{subtitle}</p>}
       </div>
     </div>
@@ -303,10 +366,17 @@ function NavBar({
 
   return (
     <div className="site-navbar fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-slate-950/50 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <a href="#home" className="text-lg font-semibold tracking-[0.2em] text-white uppercase">
+      <div className="site-navbar-inner mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <a href="/" className="text-lg font-semibold tracking-[0.2em] text-white uppercase">
           {PROFILE.name}
         </a>
+        <nav className="portfolio-nav" aria-label={locale === "vi" ? "Điều hướng chính" : "Main navigation"}>
+          <Link className="nav-link" href="/home">{COPY[locale].navHome}</Link>
+          <Link className="nav-link" href="/projects">{COPY[locale].navProjects}</Link>
+          <Link className="nav-link" href="/experience">{COPY[locale].navExperience}</Link>
+          <Link className="nav-link" href="/technologies">{COPY[locale].technologies}</Link>
+          <Link className="nav-link" href="/contact">{COPY[locale].navContact}</Link>
+        </nav>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -321,17 +391,17 @@ function NavBar({
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label={dark ? COPY[locale].switchThemeToLight : COPY[locale].switchThemeToDark}>
             {dark ? <Sun className="h-5 w-5 text-white" /> : <Moon className="h-5 w-5 text-white" />}
           </Button>
-          <a className="hidden md:block" href={PROFILE.socials.github} target="_blank" rel="noreferrer">
+          <a className="hidden xl:block" href={PROFILE.socials.github} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="GitHub">
               <Github className="h-5 w-5 text-white" />
             </Button>
           </a>
-          <a className="hidden md:block" href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer">
+          <a className="hidden xl:block" href={PROFILE.socials.linkedin} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="LinkedIn">
               <Linkedin className="h-5 w-5 text-white" />
             </Button>
           </a>
-          <a className="hidden md:block" href={PROFILE.socials.facebook} target="_blank" rel="noreferrer">
+          <a className="hidden xl:block" href={PROFILE.socials.facebook} target="_blank" rel="noreferrer">
             <Button variant="ghost" size="icon" aria-label="Facebook">
               <Facebook className="h-5 w-5 text-white" />
             </Button>
@@ -343,59 +413,40 @@ function NavBar({
 }
 
 function Hero({ locale }: { locale: Locale }) {
-  const [isDark, setIsDark] = React.useState(true);
   const copy = COPY[locale];
-
-  React.useEffect(() => {
-    const root = window.document.documentElement;
-    setIsDark(root.classList.contains("dark"));
-    const observer = new MutationObserver(() => {
-      setIsDark(root.classList.contains("dark"));
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
+  const averageSkill = Math.round(
+    SKILLS.reduce((total, skill) => total + skill.A, 0) / SKILLS.length,
+  );
 
   return (
-    <section id="home" className="relative overflow-hidden pb-20 pt-28 md:pt-32">
-      <div
-        className="absolute inset-0 -z-20 opacity-90"
-        style={{
-          backgroundImage:
-            "var(--photo-overlay), url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.35),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(236,72,153,0.25),transparent_30%)]" />
-
+    <section id="home" className="portfolio-section hero-section relative overflow-hidden pb-20 pt-28 md:pt-32">
       <div className="mx-auto max-w-6xl px-4">
         <motion.div
           variants={fadeIn}
           initial="hidden"
           animate="show"
-          className="grid min-w-0 grid-cols-1 items-center gap-10 md:grid-cols-[1.1fr_0.9fr]"
+          className="hero-layout grid min-w-0 grid-cols-1 items-center gap-10 md:grid-cols-[1.1fr_0.9fr]"
         >
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200 shadow-lg shadow-sky-500/10">
+          <div className="hero-copy min-w-0">
+            <div className="hero-availability inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200 shadow-lg shadow-sky-500/10">
               <Rocket className="h-3.5 w-3.5" />
               {copy.available}
             </div>
 
-            <h1 className="mt-5 break-words text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-6xl">
+            <h1 className="hero-title mt-5 break-words text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-6xl">
               {copy.introduction} <span className="text-sky-400">{PROFILE.name}</span>
             </h1>
 
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200">
+            <div className="hero-role mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-200">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
               {PROFILE.role}
             </div>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+            <p className="hero-summary mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
               {locale === "vi" ? PROFILE.summary : PROFILE.summaryEn}
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="hero-actions mt-8 flex flex-wrap gap-3">
               <a href={`mailto:${PROFILE.email}`}>
                 <Button className="h-11 min-w-[132px] justify-center gap-2 rounded-full bg-sky-500 px-5 py-3 text-white shadow-lg shadow-sky-500/30 hover:bg-sky-400">
                   <Mail className="h-4 w-4" /> {copy.contactMe}
@@ -408,68 +459,99 @@ function Hero({ locale }: { locale: Locale }) {
               </a>
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-4 text-sm text-slate-300">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <div className="hero-meta mt-7 flex flex-wrap items-center gap-4 text-sm text-slate-300">
+              <span className="hero-meta-item inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
                 <MapPin className="h-4 w-4 text-sky-300" /> {PROFILE.location}
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+              <span className="hero-meta-item inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
                 <Phone className="h-4 w-4 text-sky-300" /> {PROFILE.phone}
               </span>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="hero-visual relative">
             <div className="absolute -left-6 top-8 h-24 w-24 rounded-full bg-sky-400/30 blur-3xl" />
             <div className="absolute -right-8 bottom-10 h-24 w-24 rounded-full bg-fuchsia-500/25 blur-3xl" />
 
-            <Card className="relative overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/60 shadow-2xl shadow-sky-950/40 backdrop-blur-xl">
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              />
-              <CardContent className="relative p-6">
-                <SectionTitle icon={Cpu} title={copy.skills} subtitle={copy.skillsSubtitle} />
+            <div className="hero-agent-scene" aria-hidden="true">
+              <div className="hero-3d-orbit hero-3d-orbit-one" />
+              <div className="hero-3d-orbit hero-3d-orbit-two" />
+              <div className="hero-3d-cube">
+                <span className="hero-3d-face hero-3d-face-front"><Bot /></span>
+                <span className="hero-3d-face hero-3d-face-back">AI</span>
+                <span className="hero-3d-face hero-3d-face-right">{"{ }"}</span>
+                <span className="hero-3d-face hero-3d-face-left">&lt;/&gt;</span>
+                <span className="hero-3d-face hero-3d-face-top">3D</span>
+                <span className="hero-3d-face hero-3d-face-bottom">DEV</span>
+              </div>
+              <span className="hero-3d-particle hero-3d-particle-one" />
+              <span className="hero-3d-particle hero-3d-particle-two" />
+            </div>
 
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={SKILLS}>
-                      <PolarGrid stroke={isDark ? "#94a3b8" : "#94a3b8"} />
-                      <PolarAngleAxis
-                        dataKey="subject"
-                        stroke={isDark ? "#fff" : "#334155"}
-                        tick={{ fill: isDark ? "#fff" : "#334155", fontSize: 12 }}
+            <Card className="hero-skills-card hero-console skills-dashboard-card relative overflow-hidden">
+              <CardContent className="skills-dashboard-content">
+                <header className="skills-dashboard-header">
+                  <div className="skills-dashboard-title">
+                    <span className="skills-dashboard-kicker">CORE SYSTEM / 01</span>
+                    <div className="skills-dashboard-heading">
+                      <Cpu aria-hidden="true" />
+                      <h3>{copy.skills}</h3>
+                    </div>
+                    <p>{copy.skillsSubtitle}</p>
+                  </div>
+                  <span className="skills-dashboard-status">
+                    <span aria-hidden="true" />
+                    {copy.skillsStatus}
+                  </span>
+                </header>
+
+                <div className="skills-dashboard-body">
+                  <div className="skills-gauge" role="img" aria-label={`${copy.skillsIndex}: ${averageSkill}%`}>
+                    <svg aria-hidden="true" viewBox="0 0 100 100">
+                      <circle className="skills-gauge-track" cx="50" cy="50" r="42" />
+                      <circle
+                        className="skills-gauge-value"
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        style={{ strokeDasharray: `${Math.round((averageSkill / 100) * 264)} 264` }}
                       />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "rgba(15,23,42,0.9)",
-                          border: "1px solid rgba(148,163,184,0.4)",
-                          borderRadius: "12px",
-                          color: "#fff",
-                        }}
-                      />
-                      <Radar
-                        name="Skill"
-                        dataKey="A"
-                        stroke="#38bdf8"
-                        fill="#38bdf8"
-                        fillOpacity={0.5}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                    </svg>
+                    <div className="skills-gauge-copy">
+                      <strong>{averageSkill}<span>%</span></strong>
+                      <span>{copy.skillsIndex}</span>
+                    </div>
+                    <span aria-hidden="true" className="skills-gauge-orbit" />
+                  </div>
+
+                  <div className="skills-meter-list">
+                    {SKILLS.map((skill, index) => (
+                      <div className="skills-meter" key={skill.subject}>
+                        <div className="skills-meter-label">
+                          <span><i>{String(index + 1).padStart(2, "0")}</i>{skill.subject}</span>
+                          <strong>{skill.A}%</strong>
+                        </div>
+                        <div
+                          className="skills-meter-track"
+                          role="meter"
+                          aria-label={skill.subject}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={skill.A}
+                          aria-valuetext={`${skill.A}%`}
+                        >
+                          <span style={{ width: `${skill.A}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {TECH_STACK.map((t) => (
-                    <Badge key={t} variant="secondary" className="tech-stack-badge rounded-full border border-sky-400/20 bg-sky-500/10 px-2.5 py-1 text-[11px] text-sky-100">
-                      {t}
-                    </Badge>
-                  ))}
-                </div>
+                <footer className="skills-dashboard-footer">
+                  <span className="skills-footer-signal" />
+                  <span>{copy.skillsModules}</span>
+                  <span className="skills-footer-code">HN · 0{SKILLS.length}</span>
+                </footer>
               </CardContent>
             </Card>
           </div>
@@ -540,21 +622,11 @@ function Projects({ locale }: { locale: Locale }) {
   }, [selectedProject]);
 
   return (
-    <section id="projects" className="relative py-20">
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            "var(--section-overlay), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1800&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-
+    <section id="projects" className="portfolio-section projects-section relative py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle icon={Code2} title={copy.projects} subtitle={copy.projectsSubtitle} />
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="project-filters mt-8 flex flex-col gap-3 sm:flex-row">
           <label className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -563,7 +635,7 @@ function Projects({ locale }: { locale: Locale }) {
               onChange={(event) => setSearch(event.target.value)}
               placeholder={copy.searchProjects}
               aria-label={copy.searchProjects}
-              className="w-full rounded-2xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-slate-400 focus:border-sky-400/60"
+              className="project-search-input w-full rounded-2xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-slate-400 focus:border-sky-400/60"
             />
           </label>
           <label className="sm:w-64">
@@ -582,7 +654,7 @@ function Projects({ locale }: { locale: Locale }) {
             </select>
           </label>
         </div>
-        <div className="mt-3 flex min-h-7 flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+        <div className="project-results mt-3 flex min-h-7 flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
           <span aria-live="polite">{copy.showingProjects(filteredProjects.length)}</span>
           {(search || technology) && (
             <button
@@ -603,16 +675,17 @@ function Projects({ locale }: { locale: Locale }) {
             {filteredProjects.map((project, index) => (
               <motion.div
                 key={project.title}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.04 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.16 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.48, delay: index * 0.055, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Card className="project-card group h-full overflow-hidden rounded-[26px] border border-white/10 bg-slate-900/60 transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/40">
                   <button
                     type="button"
                     onClick={() => setSelectedProject(project)}
                     aria-label={`${copy.projectDetails}: ${getProjectTitle(project, locale)}`}
-                    className="relative block aspect-[16/10] w-full overflow-hidden border-b border-white/10 bg-slate-950 text-left"
+                    className="project-media relative block aspect-[16/10] w-full overflow-hidden border-b border-white/10 bg-slate-950 text-left"
                   >
                     <img
                       src={project.image}
@@ -634,7 +707,7 @@ function Projects({ locale }: { locale: Locale }) {
                       {locale === "vi" ? project.description : project.descriptionEn}
                     </p>
 
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="project-tech-tags mt-3 flex flex-wrap gap-2">
                       {project.tech.map((item) => (
                         <Badge key={item} variant="outline" className="rounded-full border-white/10 bg-white/5 text-[10px] font-medium tracking-wide text-slate-200">
                           {item}
@@ -803,6 +876,7 @@ function Projects({ locale }: { locale: Locale }) {
 
 function Experience({ locale }: { locale: Locale }) {
   const copy = COPY[locale];
+  const prefersReducedMotion = useReducedMotion();
   const items = [
     {
       time: copy.experienceNow,
@@ -817,17 +891,7 @@ function Experience({ locale }: { locale: Locale }) {
   ];
 
   return (
-    <section id="experience" className="relative py-16 md:py-20">
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            "var(--section-overlay), url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1800&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-
+    <section id="experience" className="portfolio-section experience-section relative py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle
           icon={Rocket}
@@ -835,13 +899,20 @@ function Experience({ locale }: { locale: Locale }) {
           subtitle={copy.experienceSubtitle}
         />
 
-        <div className="relative pl-12">
+        <div className="experience-timeline relative pl-12">
           <div className="absolute left-12 top-0 bottom-0 z-0 w-px bg-white/10" />
           <div className="space-y-6">
-            {items.map((it) => (
-              <div key={it.title} className="relative">
+            {items.map((it, index) => (
+              <motion.div
+                key={it.title}
+                className="relative"
+                initial={prefersReducedMotion ? false : { opacity: 0, x: 18 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <div className="absolute -left-[7px] top-2 z-10 h-3.5 w-3.5 rounded-full bg-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.9)]" />
-                <Card className="relative z-10 ml-4 border border-white/10 bg-slate-900/60 backdrop-blur-sm">
+                <Card className="experience-card relative z-10 ml-4 border border-white/10 bg-slate-900/60 backdrop-blur-sm">
                   <CardContent className="p-5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h4 className="text-lg font-semibold text-white">{it.title}</h4>
@@ -850,7 +921,7 @@ function Experience({ locale }: { locale: Locale }) {
                     <p className="mt-2 text-sm leading-6 text-slate-300">{it.desc}</p>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -859,11 +930,43 @@ function Experience({ locale }: { locale: Locale }) {
   );
 }
 
+function TechnologyItem({ technology }: { technology: (typeof TECHNOLOGIES)[number] }) {
+  return (
+    <li className="technology-card">
+      <span className="technology-icon" style={{ color: technology.color }}>
+        {technology.icon ? (
+          <svg
+            aria-hidden="true"
+            className="technology-logo"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path d={technology.icon.path} fill="currentColor" />
+          </svg>
+        ) : technology.name === "SQL Server" ? (
+          <Database aria-hidden="true" className="technology-logo" />
+        ) : technology.name === "AI Agents" ? (
+          <Bot aria-hidden="true" className="technology-logo" />
+        ) : (
+          <Code2 aria-hidden="true" className="technology-logo" />
+        )}
+      </span>
+      <span className="technology-name">{technology.name}</span>
+    </li>
+  );
+}
+
 function Technologies({ locale }: { locale: Locale }) {
   const copy = COPY[locale];
+  const rows: (typeof TECHNOLOGIES)[] = [];
+  let offset = 0;
+  for (const size of TECHNOLOGY_ROW_SIZES) {
+    rows.push(TECHNOLOGIES.slice(offset, offset + size));
+    offset += size;
+  }
 
   return (
-    <section id="technologies" className="technologies-section relative py-16 md:py-20">
+    <section id="technologies" className="portfolio-section technologies-section relative py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle
           icon={Layers3}
@@ -871,37 +974,27 @@ function Technologies({ locale }: { locale: Locale }) {
           subtitle={copy.technologiesSubtitle}
         />
 
-        <ul className="technology-grid">
-          {TECHNOLOGIES.map((technology, index) => (
-            <li className="technology-card" key={technology.name}>
-              <div className="technology-card-content">
-                <span className="technology-icon" style={{ color: technology.color }}>
-                  {technology.icon ? (
-                    <svg
-                      aria-hidden="true"
-                      className="technology-logo"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d={technology.icon.path} fill="currentColor" />
-                    </svg>
-                  ) : (
-                    <Database aria-hidden="true" className="technology-logo" />
-                  )}
-                </span>
-                <span className="technology-card-copy">
-                  <span className="technology-name">{technology.name}</span>
-                  <span className="technology-category">
-                    {locale === "vi" ? technology.category.vi : technology.category.en}
-                  </span>
-                </span>
+        <div className="technology-pyramid technology-marquee">
+          {rows.map((row, rowIndex) => (
+            <div
+              className={`technology-marquee-row ${rowIndex % 2 === 0 ? "technology-marquee-forward" : "technology-marquee-reverse"}`}
+              key={rowIndex}
+            >
+              <div className="technology-marquee-track">
+                <ul className="technology-marquee-group">
+                  {row.map((technology) => (
+                    <TechnologyItem key={technology.name} technology={technology} />
+                  ))}
+                </ul>
+                <ul className="technology-marquee-group" aria-hidden="true">
+                  {row.map((technology) => (
+                    <TechnologyItem key={technology.name} technology={technology} />
+                  ))}
+                </ul>
               </div>
-              <span aria-hidden="true" className="technology-index">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   );
@@ -910,18 +1003,9 @@ function Technologies({ locale }: { locale: Locale }) {
 function Contact({ locale }: { locale: Locale }) {
   const copy = COPY[locale];
   return (
-    <section id="contact" className="py-16 md:py-20">
+    <section id="contact" className="portfolio-section contact-section py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <Card className="overflow-hidden rounded-[30px] border border-white/10 bg-slate-900/60 shadow-[0_20px_80px_rgba(14,165,233,0.15)]">
-          <div
-            className="absolute inset-0 -z-10 opacity-50"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1516321165247-4aa89a48be28?auto=format&fit=crop&w=1800&q=80')",
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
-          />
+        <Card className="contact-card relative isolate overflow-hidden rounded-[30px] border border-white/10 bg-slate-900/60 shadow-[0_20px_80px_rgba(14,165,233,0.15)]">
           <CardContent className="p-6 md:p-8">
             <div className="grid items-center gap-6 md:grid-cols-2">
               <div>
@@ -950,13 +1034,13 @@ function Contact({ locale }: { locale: Locale }) {
               </div>
 
               <div className="grid gap-3 text-sm">
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
+                <a href={`mailto:${PROFILE.email}`} className="contact-detail flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
                   <Mail className="h-4 w-4 text-sky-300" /> {PROFILE.email}
-                </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
+                </a>
+                <a href={`tel:${PROFILE.phone.replace(/[^\d+]/g, "")}`} className="contact-detail flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
                   <Phone className="h-4 w-4 text-sky-300" /> {PROFILE.phone}
-                </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
+                </a>
+                <div className="contact-detail flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-200">
                   <MapPin className="h-4 w-4 text-sky-300" /> {PROFILE.location}
                 </div>
               </div>
@@ -970,9 +1054,16 @@ function Contact({ locale }: { locale: Locale }) {
 
 function Footer({ locale }: { locale: Locale }) {
   return (
-    <footer className="py-10 text-center text-sm text-slate-300">
-      <div className="mx-auto max-w-6xl px-4">
-        © {new Date().getFullYear()} {PROFILE.name}. {COPY[locale].allRightsReserved}
+    <footer className="portfolio-footer py-7 text-sm text-slate-300">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center sm:flex-row sm:text-left">
+        <Link href="/home" className="font-semibold tracking-[0.12em] text-white uppercase">{PROFILE.name}</Link>
+        <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2" aria-label={locale === "vi" ? "Điều hướng chân trang" : "Footer navigation"}>
+          <Link className="nav-link" href="/projects">{COPY[locale].navProjects}</Link>
+          <Link className="nav-link" href="/experience">{COPY[locale].navExperience}</Link>
+          <Link className="nav-link" href="/technologies">{COPY[locale].technologies}</Link>
+          <Link className="nav-link" href="/contact">{COPY[locale].navContact}</Link>
+        </nav>
+        <span>© {new Date().getFullYear()} {PROFILE.name}. {COPY[locale].allRightsReserved}</span>
       </div>
     </footer>
   );
@@ -1589,10 +1680,16 @@ function PortfolioEntry({
   );
 }
 
-export default function Portfolio() {
+type PortfolioSection = "home" | "projects" | "experience" | "technologies" | "contact";
+
+export default function Portfolio({ initialSection }: { initialSection?: PortfolioSection }) {
+  const router = useRouter();
   const [locale, setLocale] = React.useState<Locale>("vi");
-  const [hasEntered, setHasEntered] = React.useState(false);
-  const enterPortfolio = React.useCallback(() => setHasEntered(true), []);
+  const [hasEntered, setHasEntered] = React.useState(Boolean(initialSection));
+  const enterPortfolio = React.useCallback(() => {
+    setHasEntered(true);
+    if (!initialSection) router.replace("/home", { scroll: false });
+  }, [initialSection, router]);
 
   React.useEffect(() => {
     const savedLocale = window.localStorage.getItem("portfolio-language");
@@ -1607,6 +1704,17 @@ export default function Portfolio() {
     document.documentElement.lang = nextLocale;
   };
 
+  React.useEffect(() => {
+    if (!hasEntered || !initialSection) return;
+    const frameId = window.requestAnimationFrame(() => {
+      document.getElementById(initialSection)?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [hasEntered, initialSection]);
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       {!hasEntered ? (
@@ -1619,14 +1727,13 @@ export default function Portfolio() {
       ) : (
         <motion.div
           key="portfolio-content"
-          className="min-h-dvh bg-slate-950 text-white selection:bg-sky-500/30 selection:text-white"
+          className="portfolio-shell min-h-dvh bg-slate-950 text-white selection:bg-sky-500/30 selection:text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.35 }}
         >
-          <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.18)_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
           <NavBar locale={locale} onLocaleChange={changeLocale} />
-          <main>
+          <main className="relative">
             <Hero locale={locale} />
             <Projects locale={locale} />
             <Experience locale={locale} />

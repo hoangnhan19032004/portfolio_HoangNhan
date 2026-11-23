@@ -124,7 +124,7 @@ export default function ProjectCaseStudy({ project }: { project: Project }) {
           </div>
 
           <div className="p-5 sm:p-8 md:p-10">
-            <a href="/#projects" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-300 hover:text-sky-200">
+            <a href="/projects" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-300 hover:text-sky-200">
               <ArrowLeft className="h-4 w-4" />
               {copy.projects}
             </a>
