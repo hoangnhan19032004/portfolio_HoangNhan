@@ -76,12 +76,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Vui lòng cung cấp họ tên và địa chỉ email trước khi chat." }, { status: 400 });
     }
 
-    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const visitorIp = forwardedFor || request.headers.get("x-real-ip") || "unknown";
     const savedQuestion = await startChat({
       visitor_name: name.slice(0, 120),
       visitor_email: email.slice(0, 200),
-      visitor_ip: visitorIp.slice(0, 100),
     });
 
     return NextResponse.json({ id: savedQuestion.id, token: savedQuestion.visitor_token, messages: savedQuestion.messages || [] }, { status: 201 });

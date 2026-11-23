@@ -34,7 +34,6 @@ type Question = {
   id: string;
   visitor_name: string;
   visitor_email: string;
-  visitor_ip?: string | null;
   question: string;
   answer: string | null;
   messages?: ChatMessage[];

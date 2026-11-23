@@ -3,7 +3,6 @@ export type VisitorQuestion = {
   visitor_token?: string;
   visitor_name: string;
   visitor_email: string;
-  visitor_ip?: string | null;
   question: string;
   answer: string | null;
   status: "pending" | "answered" | "closed";
@@ -86,7 +85,7 @@ export async function listQuestions() {
   return (await response.json()) as SupabaseQuestion[];
 }
 
-export async function startChat(input: Pick<VisitorQuestion, "visitor_name" | "visitor_email"> & { visitor_ip?: string }) {
+export async function startChat(input: Pick<VisitorQuestion, "visitor_name" | "visitor_email">) {
   const createdAt = new Date().toISOString();
   const question: VisitorQuestion = {
     id: crypto.randomUUID(),

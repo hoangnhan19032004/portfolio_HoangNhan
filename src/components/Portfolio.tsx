@@ -1222,14 +1222,8 @@ function ChatWidget({ locale }: { locale: Locale }) {
   const warningWriteKey = React.useRef<string | null>(null);
 
   const resetSession = React.useCallback((sessionId: string) => {
-    try {
-      const saved = window.localStorage.getItem("portfolio-chat-session");
-      if (!saved || (JSON.parse(saved) as { id?: string }).id !== sessionId) return;
-    } catch {
-      window.localStorage.removeItem("portfolio-chat-session");
-    }
-
     window.localStorage.removeItem("portfolio-chat-session");
+    window.sessionStorage.removeItem("portfolio-chat-session");
     setQuestionSession((current) => current?.id === sessionId ? null : current);
     setVisitorName("");
     setVisitorEmail("");
@@ -1268,18 +1262,8 @@ function ChatWidget({ locale }: { locale: Locale }) {
   }, []);
 
   React.useEffect(() => {
-    const saved = window.localStorage.getItem("portfolio-chat-session");
-    if (!saved) return;
-    try {
-      const session = JSON.parse(saved) as { id: string; token: string; name?: string; email?: string };
-      if (session.id && session.token) {
-        setQuestionSession({ id: session.id, token: session.token });
-        setVisitorName(session.name || "");
-        setVisitorEmail(session.email || "");
-      }
-    } catch {
-      window.localStorage.removeItem("portfolio-chat-session");
-    }
+    window.localStorage.removeItem("portfolio-chat-session");
+    window.sessionStorage.removeItem("portfolio-chat-session");
   }, []);
 
   React.useEffect(() => {
@@ -1425,7 +1409,6 @@ function ChatWidget({ locale }: { locale: Locale }) {
       setMessages([]);
       setLastUserAt(null);
       setWarningAt(null);
-      window.localStorage.setItem("portfolio-chat-session", JSON.stringify({ ...session, name: visitorName.trim(), email: visitorEmail.trim() }));
     } catch (error) {
       setQuestionStatus(error instanceof Error ? error.message : locale === "vi" ? "Không thể gửi câu hỏi lúc này." : "Unable to start the chat right now.");
     } finally {

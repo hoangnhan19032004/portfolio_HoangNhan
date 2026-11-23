@@ -3,7 +3,6 @@ create table if not exists public.visitor_questions (
   visitor_token uuid not null unique default gen_random_uuid(),
   visitor_name text not null default 'Khách truy cập',
   visitor_email text not null,
-  visitor_ip text,
   question text not null,
   answer text,
   messages jsonb not null default '[]'::jsonb,
@@ -26,7 +25,7 @@ alter table public.visitor_questions
 alter table public.visitor_questions enable row level security;
 
 alter table public.visitor_questions
-  add column if not exists visitor_ip text;
+  drop column if exists visitor_ip;
 
 alter table public.visitor_questions
   add column if not exists messages jsonb not null default '[]'::jsonb;
