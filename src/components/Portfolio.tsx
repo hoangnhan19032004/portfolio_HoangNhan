@@ -28,6 +28,7 @@ import {
   Rocket,
   Search,
   Send,
+  ShieldCheck,
   Sun,
   User,
   X,
@@ -1484,7 +1485,18 @@ function ChatWidget({ locale }: { locale: Locale }) {
               ) : (
                 <div key={message.id} className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                   {message.role === "assistant" && <div className="mb-0.5 rounded-lg bg-sky-400/15 p-1.5 text-sky-300"><Bot className="h-3.5 w-3.5" /></div>}
-                  <div className={`chat-bubble max-w-[82%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${message.role === "user" ? "chat-user-bubble rounded-br-md bg-sky-500 text-white" : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"}`}>
+                  {message.role === "admin" && (
+                    <div className="chat-admin-avatar mb-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-sky-100" title={locale === "vi" ? "Admin" : "Admin"}>
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                  )}
+                  <div className={`chat-bubble max-w-[82%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6 ${
+                    message.role === "user"
+                      ? "chat-user-bubble rounded-br-md bg-sky-500 text-white"
+                      : message.role === "admin"
+                        ? "chat-admin-bubble rounded-bl-md border border-sky-400/30 text-white"
+                        : "chat-assistant-bubble rounded-bl-md border border-white/10 bg-white/5 text-slate-200"
+                  }`}>
                     {message.content}
                   </div>
                   {message.role === "user" && <div className="mb-0.5 rounded-lg bg-white/10 p-1.5 text-slate-300"><User className="h-3.5 w-3.5" /></div>}

@@ -4,6 +4,7 @@ import React from "react";
 import {
   ArrowLeft,
   BarChart3,
+  Bot,
   Check,
   CheckCheck,
   CheckCircle2,
@@ -19,6 +20,7 @@ import {
   Search,
   Send,
   Sparkles,
+  ShieldCheck,
   Sun,
   UserRound,
   X,
@@ -592,14 +594,26 @@ export default function AdminPage() {
                         const isAdmin = chatMessage.role === "admin";
                         return (
                           <div key={`${chatMessage.created_at}-${index}`} className={`flex ${isVisitor ? "justify-start" : "justify-end"}`}>
-                            <div className={`max-w-[88%] sm:max-w-[78%] ${isVisitor ? "" : "items-end"}`}>
-                              <div className={`mb-1.5 flex items-center gap-2 text-[10px] ${isVisitor ? "admin-muted" : "admin-muted justify-end"}`}>
-                                <span className="font-bold">{isVisitor ? selected.visitor_name : isAdmin ? "Bạn" : "Trợ lý AI"}</span>
-                                <span>{formatTime(chatMessage.created_at)}</span>
+                            <div className={`flex max-w-[88%] items-end gap-2 sm:max-w-[78%] ${isVisitor ? "" : "justify-end"}`}>
+                              {isVisitor && (
+                                <div className="admin-message-avatar visitor mb-0.5" title={selected.visitor_name}>
+                                  <UserRound className="h-4 w-4" />
+                                </div>
+                              )}
+                              <div className={isVisitor ? "" : "flex flex-col items-end"}>
+                                <div className={`mb-1.5 flex items-center gap-2 text-[10px] ${isVisitor ? "admin-muted" : "admin-muted justify-end"}`}>
+                                  <span className="font-bold">{isVisitor ? selected.visitor_name : isAdmin ? "Bạn" : "Trợ lý AI"}</span>
+                                  <span>{formatTime(chatMessage.created_at)}</span>
+                                </div>
+                                <div className={`admin-chat-bubble rounded-2xl px-4 py-3 text-sm leading-6 ${isVisitor ? "visitor" : isAdmin ? "admin" : "assistant"}`}>
+                                  <p className="whitespace-pre-wrap break-words">{chatMessage.content}</p>
+                                </div>
                               </div>
-                              <div className={`admin-chat-bubble rounded-2xl px-4 py-3 text-sm leading-6 ${isVisitor ? "visitor" : isAdmin ? "admin" : "assistant"}`}>
-                                <p className="whitespace-pre-wrap break-words">{chatMessage.content}</p>
-                              </div>
+                              {!isVisitor && (
+                                <div className={`admin-message-avatar mb-0.5 ${isAdmin ? "admin" : "assistant"}`} title={isAdmin ? "Admin" : "Trợ lý AI"}>
+                                  {isAdmin ? <ShieldCheck className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                                </div>
+                              )}
                             </div>
                           </div>
                         );

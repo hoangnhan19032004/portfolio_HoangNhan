@@ -140,6 +140,44 @@ html:not(.dark) .chat-assistant-bubble {
   color: #334155;
 }
 
+.chat-admin-bubble {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.92), rgba(2, 132, 199, 0.9));
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.14);
+}
+
+.chat-admin-avatar {
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.34), rgba(99, 102, 241, 0.28));
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.12);
+}
+
+.admin-message-avatar {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--admin-border);
+}
+
+.admin-message-avatar.visitor {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.admin-message-avatar.admin {
+  color: #e0f2fe;
+  border-color: rgba(125, 211, 252, 0.32);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.34), rgba(99, 102, 241, 0.28));
+}
+
+.admin-message-avatar.assistant {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.22);
+  background: rgba(56, 189, 248, 0.1);
+}
+
 html:not(.dark) .chat-input {
   background-color: rgba(15, 23, 42, 0.04);
   border-color: rgba(15, 23, 42, 0.14);
