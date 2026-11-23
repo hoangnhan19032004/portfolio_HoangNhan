@@ -123,7 +123,7 @@ export default function AdminPage() {
   const [copiedEmail, setCopiedEmail] = React.useState(false);
   const [unreadIds, setUnreadIds] = React.useState<Set<string>>(new Set());
   const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission>("default");
-  const previousQuestionsRef = React.useRef<Question[]>([]);
+  const previousUserMessageCountsRef = React.useRef<Map<string, number>>(new Map());
   const hasLoadedOnceRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -188,42 +188,51 @@ export default function AdminPage() {
       const updatedQuestions: Question[] = data.questions || [];
 
       if (hasLoadedOnceRef.current) {
-        const newUserMessages: Question[] = [];
+        const newUserMessages: { question: Question; message: ChatMessage }[] = [];
         updatedQuestions.forEach((question) => {
-          const latest = lastMessage(question);
-          const previous = previousQuestionsRef.current.find((item) => item.id === question.id);
-          const previousLatest = previous ? lastMessage(previous) : null;
-          if (
-            latest?.role === "user"
-            && latest.created_at
-            && latest.created_at !== previousLatest?.created_at
-          ) {
-            newUserMessages.push(question);
-          }
+          const userMessages = (question.messages || []).filter((message) => message.role === "user");
+          const previousCount = previousUserMessageCountsRef.current.get(question.id) || 0;
+          userMessages.slice(previousCount).forEach((message) => {
+            newUserMessages.push({ question, message });
+          });
         });
+
+        const nextUserMessageCounts = new Map<string, number>();
+        updatedQuestions.forEach((question) => {
+          nextUserMessageCounts.set(
+            question.id,
+            (question.messages || []).filter((message) => message.role === "user").length,
+          );
+        });
+        previousUserMessageCountsRef.current = nextUserMessageCounts;
 
         if (newUserMessages.length > 0) {
           setUnreadIds((current) => {
             const next = new Set(current);
-            newUserMessages.forEach((question) => next.add(question.id));
+            newUserMessages.forEach(({ question }) => next.add(question.id));
             return next;
           });
           playNotificationSound();
 
           if ("Notification" in window && Notification.permission === "granted") {
-            const newest = newUserMessages[0];
-            const latest = lastMessage(newest);
-            new Notification("Tin nhắn mới từ khách", {
-              body: `${newest.visitor_name}: ${latest?.content || "Người dùng vừa gửi tin nhắn mới"}`,
-              icon: "/favicon.ico",
-              tag: newest.id,
+            newUserMessages.forEach(({ question, message }, index) => {
+              new Notification("Tin nhắn mới từ khách", {
+                body: `${question.visitor_name}: ${message.content}`,
+                icon: "/favicon.ico",
+                tag: `${question.id}-${message.created_at}-${index}`,
+              });
             });
           }
         }
       } else {
         hasLoadedOnceRef.current = true;
+        previousUserMessageCountsRef.current = new Map(
+          updatedQuestions.map((question) => [
+            question.id,
+            (question.messages || []).filter((message) => message.role === "user").length,
+          ]),
+        );
       }
-      previousQuestionsRef.current = updatedQuestions;
 
       setQuestions(updatedQuestions);
       setSelectedId((current) =>
