@@ -1437,6 +1437,8 @@ html:not(.dark) .admin-empty-icon { background: rgba(15, 23, 42, 0.06); }
   font-family: var(--font-mono, monospace);
   font-size: 0.58rem;
   letter-spacing: 0.08em;
+  justify-content: flex-end;
+  gap: 1.25rem;
 }
 
 @keyframes entry-cube-rotate {
@@ -1528,7 +1530,11 @@ html:not(.dark) .admin-empty-icon { background: rgba(15, 23, 42, 0.06); }
   .entry-orbit-one { width: 94%; }
   .entry-orbit-two { width: 80%; }
   .entry-scene-index { display: none; }
-  .entry-footer { font-size: 0.5rem; }
+  .entry-footer {
+    justify-content: flex-end;
+    gap: 0.65rem;
+    font-size: 0.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
