@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest, sendEmail } from "@/lib/server";
-import { appendChatMessage, appendInactivityWarning, answerQuestion, closeChat, listQuestions, startChat } from "@/lib/questions-store";
+import { appendChatMessage, appendInactivityWarning, answerQuestion, closeChat, closeChatByAdmin, listQuestions, startChat } from "@/lib/questions-store";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -120,7 +120,13 @@ export async function PATCH(request: Request) {
   if (!isAdminRequest(request)) return NextResponse.json({ error: "Không có quyền truy cập." }, { status: 401 });
 
   try {
-    const { id, answer } = await request.json();
+    const { id, answer, close } = await request.json();
+    if (close === true) {
+      if (!id) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 400 });
+      const question = await closeChatByAdmin(String(id));
+      if (!question) return NextResponse.json({ error: "Không tìm thấy phiên chat." }, { status: 404 });
+      return NextResponse.json({ message: "Phiên chat đã được kết thúc ngay lập tức.", status: question.status });
+    }
     const cleanAnswer = String(answer || "").trim();
     if (!id || !cleanAnswer) return NextResponse.json({ error: "Nội dung trả lời không được trống." }, { status: 400 });
 

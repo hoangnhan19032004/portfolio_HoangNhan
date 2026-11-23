@@ -114,6 +114,7 @@ export default function AdminPage() {
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [sending, setSending] = React.useState(false);
+  const [endingSession, setEndingSession] = React.useState(false);
   const [dark, setDark] = React.useState(true);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [mobileDetailOpen, setMobileDetailOpen] = React.useState(false);
@@ -227,6 +228,32 @@ export default function AdminPage() {
       setMessage(error instanceof Error ? `Không thể gửi câu trả lời: ${error.message}` : "Không thể gửi câu trả lời.");
     } finally {
       setSending(false);
+    }
+  };
+
+  const endSelectedSession = async () => {
+    if (!selected || endingSession || selected.status === "closed") return;
+    if (!window.confirm(`Kết thúc ngay phiên chat của ${selected.visitor_name}?`)) return;
+
+    setEndingSession(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/questions", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": password,
+        },
+        body: JSON.stringify({ id: selected.id, close: true }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Không thể kết thúc phiên chat.");
+      setMessage(data.message || "Phiên chat đã được kết thúc.");
+      await loadQuestions(password, true);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Không thể kết thúc phiên chat.");
+    } finally {
+      setEndingSession(false);
     }
   };
 
@@ -570,6 +597,17 @@ export default function AdminPage() {
                         <span className="hidden sm:inline">{statusLabel(selected)}</span>
                         <span className="sm:hidden">{selected.status === "closed" ? "Kết thúc" : needsReply(selected) ? "Chờ" : "Xong"}</span>
                       </span>
+                      {selected.status !== "closed" && (
+                        <button
+                          type="button"
+                          onClick={() => void endSelectedSession()}
+                          disabled={endingSession}
+                          className="admin-end-session-button flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold disabled:cursor-not-allowed disabled:opacity-50 sm:text-xs"
+                        >
+                          {endingSession ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+                          <span className="hidden sm:inline">{endingSession ? "Đang kết thúc" : "Kết thúc phiên"}</span>
+                        </button>
+                      )}
                     </div>
 
                     <div className="admin-contact-strip flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-white/10 px-5 py-3 text-xs">

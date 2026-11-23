@@ -206,6 +206,23 @@ export async function closeChat(id: string, token: string, warningAt: number) {
   return { question: closedQuestion || current, closed: Boolean(closedQuestion) };
 }
 
+export async function closeChatByAdmin(id: string) {
+  const currentResponse = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&select=*`);
+  if (!currentResponse.ok) throw new Error(await supabaseError(currentResponse));
+  const [current] = (await currentResponse.json()) as SupabaseQuestion[];
+  if (!current) return null;
+  if (current.status === "closed") return current;
+
+  const response = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&status=neq.closed`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ status: "closed", answer: current.answer }),
+  });
+  if (!response.ok) throw new Error(await supabaseError(response));
+  const [closedQuestion] = (await response.json()) as SupabaseQuestion[];
+  return closedQuestion || null;
+}
+
 export async function answerQuestion(id: string, answer: string) {
   const currentResponse = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&select=*`);
   if (!currentResponse.ok) throw new Error(await supabaseError(currentResponse));

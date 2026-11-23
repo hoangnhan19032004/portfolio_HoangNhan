@@ -140,6 +140,19 @@ html:not(.dark) .chat-assistant-bubble {
   color: #334155;
 }
 
+.chat-system-notice {
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  background: rgba(56, 189, 248, 0.08);
+  color: #bae6fd;
+}
+
+html:not(.dark) .chat-system-notice {
+  border-color: #bae6fd;
+  background: #e0f2fe;
+  color: #075985;
+  box-shadow: 0 8px 22px rgba(14, 165, 233, 0.08);
+}
+
 .chat-admin-bubble {
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.92), rgba(2, 132, 199, 0.9));
   box-shadow: 0 8px 24px rgba(14, 165, 233, 0.14);
@@ -779,6 +792,22 @@ html:not(.dark) .nav-link:hover {
 .admin-stat-closed::after { background: radial-gradient(circle, rgba(148, 163, 184, 0.16), transparent 70%); }
 .admin-export-button { border: 1px solid rgba(56, 189, 248, 0.28); color: #bae6fd; background: rgba(56, 189, 248, 0.1); }
 .admin-export-button:hover:not(:disabled) { border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.18); }
+.admin-end-session-button {
+  border: 1px solid rgba(251, 113, 133, 0.28);
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.1);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.admin-end-session-button:hover:not(:disabled) {
+  border-color: rgba(251, 113, 133, 0.48);
+  background: rgba(244, 63, 94, 0.18);
+  transform: translateY(-1px);
+}
+html:not(.dark) .admin-end-session-button {
+  color: #be123c;
+  border-color: rgba(244, 63, 94, 0.28);
+  background: #fff1f2;
+}
 .admin-shortcut { border: 1px solid var(--admin-border); color: var(--admin-muted); background: rgba(255, 255, 255, 0.045); }
 .admin-filter { white-space: nowrap; }
 .admin-inbox { border-color: var(--admin-border); background: rgba(7, 17, 31, 0.3); }

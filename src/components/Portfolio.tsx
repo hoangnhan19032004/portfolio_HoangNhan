@@ -1479,7 +1479,7 @@ function ChatWidget({ locale }: { locale: Locale }) {
           <div className="chat-messages flex max-h-[min(55vh,420px)] min-h-[260px] flex-col gap-3 overflow-y-auto p-4">
             {messages.map((message) => (
               message.role === "system" ? (
-                <p key={message.id} role="status" className="mx-auto max-w-[92%] rounded-xl border border-sky-300/15 bg-sky-300/5 px-3 py-2 text-center text-xs leading-5 text-sky-100/80">
+                <p key={message.id} role="status" className="chat-system-notice mx-auto max-w-[92%] rounded-xl px-3 py-2 text-center text-xs leading-5">
                   {message.content}
                 </p>
               ) : (
