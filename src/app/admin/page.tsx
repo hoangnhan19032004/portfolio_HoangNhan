@@ -122,6 +122,8 @@ export default function AdminPage() {
   const [lastSyncedAt, setLastSyncedAt] = React.useState<Date | null>(null);
   const [copiedEmail, setCopiedEmail] = React.useState(false);
   const [unreadIds, setUnreadIds] = React.useState<Set<string>>(new Set());
+  const [inAppNotification, setInAppNotification] = React.useState("");
+  const inAppNotificationTimeout = React.useRef<number | null>(null);
   const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission>("default");
   const previousUserMessageCountsRef = React.useRef<Map<string, number>>(new Map());
   const hasLoadedOnceRef = React.useRef(false);
@@ -135,6 +137,10 @@ export default function AdminPage() {
 
   React.useEffect(() => {
     if ("Notification" in window) setNotificationPermission(Notification.permission);
+  }, []);
+
+  React.useEffect(() => () => {
+    if (inAppNotificationTimeout.current) window.clearTimeout(inAppNotificationTimeout.current);
   }, []);
 
   React.useEffect(() => {
@@ -161,6 +167,13 @@ export default function AdminPage() {
       oscillator.addEventListener("ended", () => void context.close());
     } catch {
     }
+  }, []);
+
+  const showInAppNotification = React.useCallback((text: string) => {
+    setInAppNotification(text);
+    if (inAppNotificationTimeout.current) window.clearTimeout(inAppNotificationTimeout.current);
+    inAppNotificationTimeout.current = window.setTimeout(() => setInAppNotification(""), 6000);
+    if ("vibrate" in navigator) navigator.vibrate([120, 80, 120]);
   }, []);
 
   const requestNotifications = async () => {
@@ -213,6 +226,8 @@ export default function AdminPage() {
             return next;
           });
           playNotificationSound();
+          const newest = newUserMessages[newUserMessages.length - 1];
+          showInAppNotification(`${newest.question.visitor_name}: ${newest.message.content}`);
 
           if ("Notification" in window && Notification.permission === "granted") {
             newUserMessages.forEach(({ question, message }, index) => {
@@ -248,7 +263,7 @@ export default function AdminPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [password, playNotificationSound]);
+  }, [password, playNotificationSound, showInAppNotification]);
 
   React.useEffect(() => {
     if (!loggedIn) return;
@@ -482,6 +497,17 @@ export default function AdminPage() {
         {sidebarOpen && <button className="fixed inset-0 z-30 bg-slate-950/50 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Đóng menu" />}
 
         <section className="min-w-0 flex-1">
+          {inAppNotification && (
+            <button
+              type="button"
+              onClick={() => setInAppNotification("")}
+              className="admin-in-app-notification fixed left-4 right-4 z-[70] rounded-2xl px-4 py-3 text-left text-sm font-semibold shadow-2xl"
+              role="alert"
+            >
+              <span className="mr-2 inline-grid h-8 w-8 align-middle place-items-center rounded-full bg-sky-400/20 text-sky-300"><Bell className="h-4 w-4" /></span>
+              <span className="align-middle">{inAppNotification}</span>
+            </button>
+          )}
           <header className="admin-header sticky top-0 z-20 flex items-center justify-between border-b px-4 py-4 md:px-8">
             <div className="flex items-center gap-3">
               <button className="admin-icon-button rounded-xl p-2 lg:hidden" onClick={() => setSidebarOpen(true)} aria-label="Mở menu">

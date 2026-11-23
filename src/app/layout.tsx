@@ -1,5 +1,17 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1f5f9" },
+    { media: "(prefers-color-scheme: dark)", color: "#07111f" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://codewithhn.netlify.app"),
