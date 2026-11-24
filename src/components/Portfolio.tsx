@@ -415,9 +415,24 @@ function NavBar({
 
 function Hero({ locale }: { locale: Locale }) {
   const copy = COPY[locale];
+  const [showAiCharacter, setShowAiCharacter] = React.useState(false);
   const averageSkill = Math.round(
     SKILLS.reduce((total, skill) => total + skill.A, 0) / SKILLS.length,
   );
+
+  React.useEffect(() => {
+    if (!showAiCharacter) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowAiCharacter(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showAiCharacter]);
 
   return (
     <section id="home" className="portfolio-section hero-section relative overflow-hidden pb-20 pt-28 md:pt-32">
@@ -489,7 +504,35 @@ function Hero({ locale }: { locale: Locale }) {
               <span className="hero-3d-particle hero-3d-particle-two" />
             </div>
 
-            <Card className="hero-skills-card hero-console skills-dashboard-card relative overflow-hidden">
+            <Card
+              className="hero-skills-card hero-console skills-dashboard-card relative overflow-hidden"
+              role="button"
+              tabIndex={0}
+              aria-label={locale === "vi" ? "Mở nhân vật AI 3D biểu thị kỹ năng" : "Open 3D AI skill character"}
+              onClick={() => setShowAiCharacter(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setShowAiCharacter(true);
+                }
+              }}
+              onPointerMove={(event) => {
+                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+                const bounds = event.currentTarget.getBoundingClientRect();
+                const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+                const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+                event.currentTarget.style.setProperty("--skills-tilt-x", `${(-y * 5).toFixed(2)}deg`);
+                event.currentTarget.style.setProperty("--skills-tilt-y", `${(x * 7).toFixed(2)}deg`);
+                event.currentTarget.style.setProperty("--skills-glow-x", `${((x + 0.5) * 100).toFixed(0)}%`);
+                event.currentTarget.style.setProperty("--skills-glow-y", `${((y + 0.5) * 100).toFixed(0)}%`);
+              }}
+              onPointerLeave={(event) => {
+                event.currentTarget.style.setProperty("--skills-tilt-x", "0deg");
+                event.currentTarget.style.setProperty("--skills-tilt-y", "0deg");
+                event.currentTarget.style.setProperty("--skills-glow-x", "50%");
+                event.currentTarget.style.setProperty("--skills-glow-y", "50%");
+              }}
+            >
               <CardContent className="skills-dashboard-content">
                 <header className="skills-dashboard-header">
                   <div className="skills-dashboard-title">
@@ -558,6 +601,90 @@ function Hero({ locale }: { locale: Locale }) {
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showAiCharacter && (
+          <motion.div
+            className="skills-ai-backdrop"
+            role="presentation"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onPointerDown={(event) => {
+              if (event.target === event.currentTarget) setShowAiCharacter(false);
+            }}
+          >
+            <motion.div
+              className="skills-ai-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label={locale === "vi" ? "Nhân vật AI kỹ năng" : "AI skills character"}
+              initial={{ opacity: 0, scale: 0.88, y: 24, rotateX: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 14 }}
+              transition={{ type: "spring", stiffness: 220, damping: 22 }}
+            >
+              <button
+                type="button"
+                className="skills-ai-close"
+                onClick={() => setShowAiCharacter(false)}
+                aria-label={locale === "vi" ? "Đóng nhân vật AI" : "Close AI character"}
+                autoFocus
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="skills-ai-copy">
+                <span className="skills-ai-kicker">AI CHARACTER / CORE 01</span>
+                <h2>{locale === "vi" ? "Nhân vật năng lực" : "Skill AI character"}</h2>
+                <p>
+                  {locale === "vi"
+                    ? "Nhân vật đại diện cho 6 năng lực lõi đang hoạt động đồng bộ."
+                    : "A digital character representing six active core capabilities."}
+                </p>
+              </div>
+
+              <div className="skills-ai-stage" aria-hidden="true">
+                <div className="skills-ai-grid" />
+                <div className="skills-ai-orbit skills-ai-orbit-one" />
+                <div className="skills-ai-orbit skills-ai-orbit-two" />
+                <div className="skills-ai-particle skills-ai-particle-one" />
+                <div className="skills-ai-particle skills-ai-particle-two" />
+                <div className="skills-ai-shadow" />
+                <motion.div
+                  className="skills-ai-character"
+                  animate={{ y: [0, -10, 0], rotateY: [-4, 4, -4] }}
+                  transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="skills-ai-antenna"><span /></div>
+                  <div className="skills-ai-head">
+                    <div className="skills-ai-ear skills-ai-ear-left" />
+                    <div className="skills-ai-ear skills-ai-ear-right" />
+                    <div className="skills-ai-face">
+                      <span className="skills-ai-eye skills-ai-eye-left" />
+                      <span className="skills-ai-eye skills-ai-eye-right" />
+                      <span className="skills-ai-mouth" />
+                    </div>
+                  </div>
+                  <div className="skills-ai-neck" />
+                  <div className="skills-ai-body">
+                    <div className="skills-ai-core"><Cpu /></div>
+                    <div className="skills-ai-arm skills-ai-arm-left"><span /></div>
+                    <div className="skills-ai-arm skills-ai-arm-right"><span /></div>
+                  </div>
+                </motion.div>
+              </div>
+
+              <div className="skills-ai-stats">
+                <div><span>AVERAGE</span><strong>{averageSkill}%</strong></div>
+                {SKILLS.slice(0, 3).map((skill) => (
+                  <div key={skill.subject}><span>{skill.subject}</span><strong>{skill.A}%</strong></div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
