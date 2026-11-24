@@ -1,11 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#38BDF8"/>
-      <stop offset="1" stop-color="#4F46E5"/>
-    </linearGradient>
-  </defs>
-  <rect x="3" y="3" width="58" height="58" rx="15" fill="#07111F"/>
-  <rect x="6" y="6" width="52" height="52" rx="13" fill="url(#bg)" opacity=".96"/>
-  <path d="M17 20h6v9h18v-9h6v24h-6V35H23v9h-6V20Z" fill="#F8FAFC"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <style>
+    .bg { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-opacity: 0.35; }
+    .bar { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; stroke-opacity: 0.3; }
+    .dot1 { fill: #0ea5e9; }
+    .dot2 { fill: #2563eb; }
+    .dot3 { fill: #7dd3fc; }
+    .ghost-line { stroke: #0284c7; stroke-opacity: 0.32; }
+    .prompt { stroke: #0284c7; }
+    .divider { stroke: #1d4ed8; stroke-opacity: 0.5; }
+    .link-line { stroke: #0284c7; stroke-opacity: 0.65; }
+    .status { fill: #0ea5e9; }
+    .n-halo { stroke: #eff6ff; }
+    .n-stroke { stroke: #1e3a8a; }
+    .n-core { stroke: #0ea5e9; }
+    .n-node { fill: #0284c7; }
+
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #082f49; stroke: #38bdf8; stroke-width: 2; stroke-opacity: 0.35; }
+      .bar { fill: #0c4a6e; stroke: #38bdf8; stroke-width: 1.5; stroke-opacity: 0.3; }
+      .dot1 { fill: #38bdf8; }
+      .dot2 { fill: #0284c7; }
+      .dot3 { fill: #bae6fd; }
+      .ghost-line { stroke: #38bdf8; stroke-opacity: 0.32; }
+      .prompt { stroke: #38bdf8; }
+      .divider { stroke: #7dd3fc; stroke-opacity: 0.5; }
+      .link-line { stroke: #7dd3fc; stroke-opacity: 0.65; }
+      .status { fill: #7dd3fc; }
+      .n-halo { stroke: #082f49; }
+      .n-stroke { stroke: #f0f9ff; }
+      .n-core { stroke: #38bdf8; }
+      .n-node { fill: #7dd3fc; }
+    }
+  </style>
+  <rect class="bg" x="1" y="1" width="62" height="62" rx="16" />
+  
+  <path class="bar" d="M1 17 V16 A15 15 0 0 1 16 1 H48 A15 15 0 0 1 63 16 V17 Z" />
+  <circle class="dot1" cx="13" cy="9.5" r="2.3" />
+  <circle class="dot2" cx="20" cy="9.5" r="2.3" />
+  <circle class="dot3" cx="27" cy="9.5" r="2.3" />
+  
+  <line class="ghost-line" x1="11" y1="25" x2="22" y2="25" stroke-width="2.5" stroke-linecap="round" />
+  <path class="prompt" d="M43 22.5 L46.5 25 L43 27.5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <line class="prompt" x1="48.5" y1="27.5" x2="53" y2="27.5" stroke-width="2" stroke-linecap="round" />
+  
+  <line class="ghost-line" x1="11" y1="53" x2="36" y2="53" stroke-width="2.5" stroke-linecap="round" />
+  <line class="divider" x1="41" y1="49.5" x2="41" y2="56.5" stroke-width="2" stroke-linecap="round" />
+  <polyline class="link-line" points="45,53 51,53 51,48.5" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+  <circle class="status" cx="51" cy="47.5" r="2.3" />
+  
+  <path class="n-halo" d="M23 44 V25 L41 44 V25" fill="none" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <path class="n-stroke" d="M23 44 V25 L41 44 V25" fill="none" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+  <line class="n-core" x1="25.5" y1="27.8" x2="38.5" y2="41.2" stroke-width="1.6" stroke-linecap="round" />
+  <circle class="n-node" cx="23" cy="44" r="2.6" />
+  <circle class="n-node" cx="41" cy="25" r="2.6" />
 </svg>
