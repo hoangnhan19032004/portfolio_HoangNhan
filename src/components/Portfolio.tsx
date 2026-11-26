@@ -415,24 +415,59 @@ function NavBar({
 
 function Hero({ locale }: { locale: Locale }) {
   const copy = COPY[locale];
-  const [showAiCharacter, setShowAiCharacter] = React.useState(false);
+  const [skillsFlipped, setSkillsFlipped] = React.useState(false);
+  const [skillsPullY, setSkillsPullY] = React.useState(0);
+  const [isSkillsPulling, setIsSkillsPulling] = React.useState(false);
+  const [skillsHidden, setSkillsHidden] = React.useState(false);
+  const [skillsCardHeight, setSkillsCardHeight] = React.useState(0);
+  const skillsCardTrack = React.useRef<HTMLDivElement>(null);
+  const skillsPullStart = React.useRef<{ pointerY: number; pullY: number; maxUp: number } | null>(null);
+  const getSkillsCardHeight = () => {
+    const card = skillsCardTrack.current?.querySelector(".skills-dashboard-card");
+    return card instanceof HTMLElement ? card.offsetHeight : 0;
+  };
+  const getMaxSkillsPull = () => getSkillsCardHeight();
+  const clampSkillsPull = (value: number, maxUp: number) => Math.max(-maxUp, Math.min(70, value));
+  const settleSkillsPull = (value: number, maxUp: number) => {
+    const hideThreshold = Math.min(90, maxUp * 0.25);
+    const shouldHide = maxUp > 0 && (
+      skillsHidden
+        ? value <= -maxUp + hideThreshold
+        : value <= -hideThreshold
+    );
+    setSkillsHidden(shouldHide);
+    setSkillsPullY(shouldHide ? -maxUp : 0);
+    setIsSkillsPulling(false);
+  };
+  const skillsPullScale = skillsCardHeight > 0
+    ? 1 - Math.min(Math.abs(skillsPullY) / skillsCardHeight, 1) * 0.035
+    : 1;
   const averageSkill = Math.round(
     SKILLS.reduce((total, skill) => total + skill.A, 0) / SKILLS.length,
   );
 
   React.useEffect(() => {
-    if (!showAiCharacter) return;
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setShowAiCharacter(false);
+      if (event.key === "Escape") setSkillsFlipped(false);
     };
     window.addEventListener("keydown", handleEscape);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  React.useEffect(() => {
+    const card = skillsCardTrack.current?.querySelector(".skills-dashboard-card");
+    if (!(card instanceof HTMLElement)) return;
+
+    const updateCardHeight = () => setSkillsCardHeight(card.offsetHeight);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateCardHeight);
+    observer?.observe(card);
+    window.addEventListener("resize", updateCardHeight);
+    updateCardHeight();
     return () => {
-      window.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = previousOverflow;
+      observer?.disconnect();
+      window.removeEventListener("resize", updateCardHeight);
     };
-  }, [showAiCharacter]);
+  }, []);
 
   return (
     <section id="home" className="portfolio-section hero-section relative overflow-hidden pb-20 pt-28 md:pt-32">
@@ -490,8 +525,30 @@ function Hero({ locale }: { locale: Locale }) {
             <div className="absolute -right-8 bottom-10 h-24 w-24 rounded-full bg-fuchsia-500/25 blur-3xl" />
 
             <div className="hero-agent-scene" aria-hidden="true">
-              <div className="hero-3d-orbit hero-3d-orbit-one" />
-              <div className="hero-3d-orbit hero-3d-orbit-two" />
+              <div className="hero-tech-environment">
+                <div className="hero-tech-platform" />
+                <svg className="hero-tech-connections" viewBox="0 0 390 310" aria-hidden="true">
+                  <path d="M22 78h76l34 26h46m70-28h66M18 218h64l32-39h42m72 44h75M74 32v35l36 26m116 159v-38l32-32h42" />
+                  <path d="M38 152h54l27-26h39m88-67h55m-195 173h44m116-70h68" />
+                  <circle cx="98" cy="78" r="3" />
+                  <circle cx="248" cy="76" r="3" />
+                  <circle cx="82" cy="218" r="3" />
+                  <circle cx="228" cy="223" r="3" />
+                  <circle cx="116" cy="126" r="3" />
+                  <circle cx="282" cy="91" r="3" />
+                </svg>
+                <span className="hero-tech-orbit hero-tech-orbit-one"><i /></span>
+                <span className="hero-tech-orbit hero-tech-orbit-two"><i /></span>
+                <span className="hero-tech-orbit hero-tech-orbit-three"><i /></span>
+                <span className="hero-tech-ai-core">
+                  <span className="hero-tech-ai-grid" />
+                  <span className="hero-tech-ai-mark">AI</span>
+                </span>
+                <span className="hero-tech-data-chip hero-tech-data-chip-code">&lt;/&gt;</span>
+                <span className="hero-tech-data-chip hero-tech-data-chip-node">NODE 01</span>
+                <span className="hero-tech-data-node hero-tech-data-node-one" />
+                <span className="hero-tech-data-node hero-tech-data-node-two" />
+              </div>
               <div className="hero-3d-cube">
                 <span className="hero-3d-face hero-3d-face-front"><Bot /></span>
                 <span className="hero-3d-face hero-3d-face-back">AI</span>
@@ -500,40 +557,132 @@ function Hero({ locale }: { locale: Locale }) {
                 <span className="hero-3d-face hero-3d-face-top">3D</span>
                 <span className="hero-3d-face hero-3d-face-bottom">DEV</span>
               </div>
-              <span className="hero-3d-particle hero-3d-particle-one" />
-              <span className="hero-3d-particle hero-3d-particle-two" />
             </div>
 
-            <Card
-              className="hero-skills-card hero-console skills-dashboard-card relative overflow-hidden"
-              role="button"
-              tabIndex={0}
-              aria-label={locale === "vi" ? "Mở nhân vật AI 3D biểu thị kỹ năng" : "Open 3D AI skill character"}
-              onClick={() => setShowAiCharacter(true)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setShowAiCharacter(true);
-                }
-              }}
-              onPointerMove={(event) => {
-                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-                const bounds = event.currentTarget.getBoundingClientRect();
-                const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-                const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-                event.currentTarget.style.setProperty("--skills-tilt-x", `${(-y * 5).toFixed(2)}deg`);
-                event.currentTarget.style.setProperty("--skills-tilt-y", `${(x * 7).toFixed(2)}deg`);
-                event.currentTarget.style.setProperty("--skills-glow-x", `${((x + 0.5) * 100).toFixed(0)}%`);
-                event.currentTarget.style.setProperty("--skills-glow-y", `${((y + 0.5) * 100).toFixed(0)}%`);
-              }}
-              onPointerLeave={(event) => {
-                event.currentTarget.style.setProperty("--skills-tilt-x", "0deg");
-                event.currentTarget.style.setProperty("--skills-tilt-y", "0deg");
-                event.currentTarget.style.setProperty("--skills-glow-x", "50%");
-                event.currentTarget.style.setProperty("--skills-glow-y", "50%");
-              }}
+            <div
+              className={`skills-hanging-rig ${isSkillsPulling ? "is-pulling" : ""} ${skillsPullY < 0 ? "is-retracted" : ""}`}
+              style={{
+                "--skills-pull-y": `${skillsPullY}px`,
+                "--skills-pull-scale": `${skillsPullScale}`,
+              } as React.CSSProperties}
             >
-              <CardContent className="skills-dashboard-content">
+              <span className="skills-rope-cord" aria-hidden="true" />
+              <button
+                type="button"
+                className="skills-rope-handle"
+                aria-label={skillsHidden
+                  ? (locale === "vi" ? "Kéo dây xuống để hiện lại bảng kỹ năng" : "Pull down to reveal the skills dashboard")
+                  : (locale === "vi" ? "Kéo dây lên để thu gọn bảng kỹ năng" : "Pull up to retract the skills dashboard")}
+                aria-keyshortcuts="ArrowUp ArrowDown"
+                title={skillsHidden
+                  ? (locale === "vi" ? "Kéo xuống hoặc nhấn ↓ để hiện lại bảng" : "Pull down or press ↓ to reveal the dashboard")
+                  : (locale === "vi" ? "Kéo lên hoặc nhấn ↑ để thu gọn bảng" : "Pull up or press ↑ to retract the dashboard")}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  const cardHeight = getSkillsCardHeight();
+                  setSkillsCardHeight(cardHeight);
+                  skillsPullStart.current = {
+                    pointerY: event.clientY,
+                    pullY: skillsPullY,
+                    maxUp: cardHeight,
+                  };
+                  setIsSkillsPulling(true);
+                }}
+                onPointerMove={(event) => {
+                  const start = skillsPullStart.current;
+                  if (!start || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
+                  const nextPull = clampSkillsPull(start.pullY + event.clientY - start.pointerY, start.maxUp);
+                  setSkillsPullY(nextPull);
+                }}
+                onPointerUp={(event) => {
+                  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                    event.currentTarget.releasePointerCapture(event.pointerId);
+                  }
+                  const start = skillsPullStart.current;
+                  if (start) {
+                    const finalPull = clampSkillsPull(
+                      start.pullY + event.clientY - start.pointerY,
+                      start.maxUp,
+                    );
+                    settleSkillsPull(finalPull, start.maxUp);
+                  }
+                  skillsPullStart.current = null;
+                }}
+                onPointerCancel={() => {
+                  const start = skillsPullStart.current;
+                  skillsPullStart.current = null;
+                  setIsSkillsPulling(false);
+                  setSkillsPullY(start && skillsHidden ? -start.maxUp : 0);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+                  event.preventDefault();
+                  const cardHeight = getSkillsCardHeight();
+                  setSkillsCardHeight(cardHeight);
+                  const maxUp = cardHeight;
+                  const shouldHide = event.key === "ArrowUp" && maxUp > 0;
+                  setIsSkillsPulling(false);
+                  setSkillsHidden(shouldHide);
+                  setSkillsPullY(shouldHide ? -maxUp : 0);
+                }}
+                onBlur={() => {
+                  if (!skillsPullStart.current) return;
+                  skillsPullStart.current = null;
+                  settleSkillsPull(skillsPullY, getMaxSkillsPull());
+                }}
+              >
+                <span className="skills-rope-grip" aria-hidden="true">
+                  <i /><i /><i />
+                </span>
+                <span className="skills-rope-hint">
+                  {skillsHidden
+                    ? (locale === "vi" ? "KÉO XUỐNG" : "PULL DOWN")
+                    : (locale === "vi" ? "KÉO LÊN" : "PULL UP")}
+                </span>
+              </button>
+              <div
+                ref={skillsCardTrack}
+                className="skills-card-track"
+                style={skillsCardHeight > 0 ? { height: `${skillsCardHeight}px` } : undefined}
+              >
+              <Card
+                className="hero-skills-card hero-console skills-dashboard-card relative overflow-hidden"
+                role="button"
+                tabIndex={skillsHidden ? -1 : 0}
+                aria-hidden={skillsHidden}
+                aria-label={skillsFlipped
+                  ? (locale === "vi" ? "Lật lại mặt kỹ năng" : "Flip back to the skills overview")
+                  : (locale === "vi" ? "Lật bảng kỹ năng để xem trợ lý AI 3D" : "Flip skills dashboard to see the 3D AI assistant")}
+                aria-pressed={skillsFlipped}
+                onClick={() => {
+                  if (!skillsHidden) setSkillsFlipped((flipped) => !flipped);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSkillsFlipped((flipped) => !flipped);
+                  }
+                }}
+                onPointerMove={(event) => {
+                  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+                  const bounds = event.currentTarget.getBoundingClientRect();
+                  const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+                  const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+                  event.currentTarget.style.setProperty("--skills-tilt-x", `${(-y * 5).toFixed(2)}deg`);
+                  event.currentTarget.style.setProperty("--skills-tilt-y", `${(x * 7).toFixed(2)}deg`);
+                  event.currentTarget.style.setProperty("--skills-glow-x", `${((x + 0.5) * 100).toFixed(0)}%`);
+                  event.currentTarget.style.setProperty("--skills-glow-y", `${((y + 0.5) * 100).toFixed(0)}%`);
+                }}
+                onPointerLeave={(event) => {
+                  event.currentTarget.style.setProperty("--skills-tilt-x", "0deg");
+                  event.currentTarget.style.setProperty("--skills-tilt-y", "0deg");
+                  event.currentTarget.style.setProperty("--skills-glow-x", "50%");
+                  event.currentTarget.style.setProperty("--skills-glow-y", "50%");
+                }}
+              >
+                <div className={`skills-flip-inner ${skillsFlipped ? "is-flipped" : ""}`}>
+              <CardContent className="skills-dashboard-content skills-card-face skills-card-front">
                 <header className="skills-dashboard-header">
                   <div className="skills-dashboard-title">
                     <span className="skills-dashboard-kicker">CORE SYSTEM / 01</span>
@@ -594,97 +743,63 @@ function Hero({ locale }: { locale: Locale }) {
                 <footer className="skills-dashboard-footer">
                   <span className="skills-footer-signal" />
                   <span>{copy.skillsModules}</span>
+                  <span className="skills-card-flip-hint">
+                    {locale === "vi" ? "NHẤN ĐỂ GẶP TRỢ LÝ AI" : "TAP TO MEET AI"}
+                  </span>
                   <span className="skills-footer-code">HN · 0{SKILLS.length}</span>
                 </footer>
               </CardContent>
-            </Card>
+              <div className="skills-card-face skills-card-back">
+                <div className="skills-card-back-heading">
+                  <div>
+                    <span className="skills-ai-kicker">AI ASSISTANT / HN</span>
+                    <h3>{locale === "vi" ? "Trợ lý ảo của mình" : "My AI assistant"}</h3>
+                    <p>
+                      {locale === "vi"
+                        ? "Đại diện số luôn sẵn sàng hỗ trợ bạn."
+                        : "A digital representative, ready to help you."}
+                    </p>
+                  </div>
+                  <span className="skills-dashboard-status"><span aria-hidden="true" /> ONLINE</span>
+                </div>
+                <div className="skills-card-character-stage" aria-hidden="true">
+                  <div className="skills-ai-grid" />
+                  <div className="skills-ai-orbit skills-ai-orbit-one" />
+                  <div className="skills-ai-orbit skills-ai-orbit-two" />
+                  <div className="skills-ai-particle skills-ai-particle-one" />
+                  <div className="skills-ai-particle skills-ai-particle-two" />
+                  <div className="skills-ai-shadow" />
+                  <div className="skills-ai-character">
+                    <div className="skills-ai-antenna"><span /></div>
+                    <div className="skills-ai-head">
+                      <div className="skills-ai-ear skills-ai-ear-left" />
+                      <div className="skills-ai-ear skills-ai-ear-right" />
+                      <div className="skills-ai-face">
+                        <span className="skills-ai-eye skills-ai-eye-left" />
+                        <span className="skills-ai-eye skills-ai-eye-right" />
+                        <span className="skills-ai-mouth" />
+                      </div>
+                    </div>
+                    <div className="skills-ai-neck" />
+                    <div className="skills-ai-body">
+                      <div className="skills-ai-core"><Cpu /></div>
+                      <div className="skills-ai-arm skills-ai-arm-left"><span /></div>
+                      <div className="skills-ai-arm skills-ai-arm-right"><span /></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="skills-card-back-footer">
+                  <span><i /> {locale === "vi" ? "ĐANG KẾT NỐI" : "CONNECTED"}</span>
+                  <span>{locale === "vi" ? "NHẤN ĐỂ QUAY LẠI" : "TAP TO RETURN"}</span>
+                </div>
+              </div>
+                </div>
+              </Card>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
-
-      <AnimatePresence>
-        {showAiCharacter && (
-          <motion.div
-            className="skills-ai-backdrop"
-            role="presentation"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onPointerDown={(event) => {
-              if (event.target === event.currentTarget) setShowAiCharacter(false);
-            }}
-          >
-            <motion.div
-              className="skills-ai-dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-label={locale === "vi" ? "Nhân vật AI kỹ năng" : "AI skills character"}
-              initial={{ opacity: 0, scale: 0.88, y: 24, rotateX: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 14 }}
-              transition={{ type: "spring", stiffness: 220, damping: 22 }}
-            >
-              <button
-                type="button"
-                className="skills-ai-close"
-                onClick={() => setShowAiCharacter(false)}
-                aria-label={locale === "vi" ? "Đóng nhân vật AI" : "Close AI character"}
-                autoFocus
-              >
-                <X className="h-5 w-5" />
-              </button>
-
-              <div className="skills-ai-copy">
-                <span className="skills-ai-kicker">AI CHARACTER / CORE 01</span>
-                <h2>{locale === "vi" ? "Nhân vật năng lực" : "Skill AI character"}</h2>
-                <p>
-                  {locale === "vi"
-                    ? "Nhân vật đại diện cho 6 năng lực lõi đang hoạt động đồng bộ."
-                    : "A digital character representing six active core capabilities."}
-                </p>
-              </div>
-
-              <div className="skills-ai-stage" aria-hidden="true">
-                <div className="skills-ai-grid" />
-                <div className="skills-ai-orbit skills-ai-orbit-one" />
-                <div className="skills-ai-orbit skills-ai-orbit-two" />
-                <div className="skills-ai-particle skills-ai-particle-one" />
-                <div className="skills-ai-particle skills-ai-particle-two" />
-                <div className="skills-ai-shadow" />
-                <motion.div
-                  className="skills-ai-character"
-                  animate={{ y: [0, -10, 0], rotateY: [-4, 4, -4] }}
-                  transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <div className="skills-ai-antenna"><span /></div>
-                  <div className="skills-ai-head">
-                    <div className="skills-ai-ear skills-ai-ear-left" />
-                    <div className="skills-ai-ear skills-ai-ear-right" />
-                    <div className="skills-ai-face">
-                      <span className="skills-ai-eye skills-ai-eye-left" />
-                      <span className="skills-ai-eye skills-ai-eye-right" />
-                      <span className="skills-ai-mouth" />
-                    </div>
-                  </div>
-                  <div className="skills-ai-neck" />
-                  <div className="skills-ai-body">
-                    <div className="skills-ai-core"><Cpu /></div>
-                    <div className="skills-ai-arm skills-ai-arm-left"><span /></div>
-                    <div className="skills-ai-arm skills-ai-arm-right"><span /></div>
-                  </div>
-                </motion.div>
-              </div>
-
-              <div className="skills-ai-stats">
-                <div><span>AVERAGE</span><strong>{averageSkill}%</strong></div>
-                {SKILLS.slice(0, 3).map((skill) => (
-                  <div key={skill.subject}><span>{skill.subject}</span><strong>{skill.A}%</strong></div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
